@@ -1,8 +1,0 @@
-function(e, t, n) {
-    "use strict";
-    n(24)("fixed", function(e) {
-        return function() {
-            return e(this, "tt", "", "")
-        }
-    })
-}
