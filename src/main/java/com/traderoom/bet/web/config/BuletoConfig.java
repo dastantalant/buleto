@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BuletoConfig {
 
-    @Bean
+//    @Bean
     public ChromeOptions chromeOptions(@Value("${browser.chrome.shell}") String chromeShell) {
         ChromeOptions options = new ChromeOptions();
         options.setBinary(new File(chromeShell));
