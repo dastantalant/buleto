@@ -1,22 +1,14 @@
 spring:
   application:
     name: bet
-  config:
-    import: optional:file:.env[.properties]
-
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
+    url: jdbc:postgresql://localhost:5432/buleto
+    username: buleto
+    password: buleto
   security:
     user:
       name: das
       password: das
-browser:
-  chrome:
-    shell: ${CHROME_SHELL}
-    driver: ${CHROME_DRIVER}
 server:
   port: 99
