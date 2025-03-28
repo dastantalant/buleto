@@ -113,6 +113,9 @@ CREATE TABLE round
     victory_wave_id     int8 NOT NULL REFERENCES wave (wave_id),
     victory_cell_number int2 NOT NULL CHECK (victory_cell_number >= 0 AND victory_cell_number <= 37)
 );
+CREATE INDEX idx_round_start_datetime ON round USING btree (start_datetime);
+CREATE INDEX idx_round_end_datetime ON round USING btree (end_datetime);
+CREATE INDEX idx_round_victory_datetime ON round USING btree (victory_datetime);
 
 CREATE TABLE round_cell
 (

@@ -35,6 +35,11 @@ build/
 .vscode/
 
 *.class
+.sql
+.json
+!/.json
+!/.sql
+
 
 # Log file
 *.log
