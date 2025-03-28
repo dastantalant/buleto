@@ -34,3 +34,7 @@ build/
 .vscode/
 
 *.class
+.sql
+.json
+!/.json
+!/.sql

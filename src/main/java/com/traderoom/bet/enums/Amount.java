@@ -1,4 +1,4 @@
-package com.traderoom.bet.web.enums;
+package com.traderoom.bet.enums;
 
 public enum Amount {
     _10(10),
