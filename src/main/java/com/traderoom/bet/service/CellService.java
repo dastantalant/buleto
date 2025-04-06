@@ -1,5 +1,7 @@
 package com.traderoom.bet.service;
 
+import jakarta.validation.constraints.Min;
+
 public interface CellService {
     long DAY = 86_400_000;
     long HOUR = 3_600_000;
@@ -11,4 +13,5 @@ public interface CellService {
     String findAllByDay(long day);
 
     String findAllByRoundId(long roundId);
+
 }

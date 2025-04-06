@@ -5,21 +5,21 @@ import com.jsoniter.spi.Encoder;
 import com.jsoniter.spi.JsoniterSpi;
 import java.io.IOException;
 
-public record BuletoBetween(
-        long from,
-        long to,
-        String data
+public record PageResponse(
+    int page,
+    int size,
+    String data
 ) {
     static {
-        JsoniterSpi.registerTypeEncoder(BuletoBetween.class, new Encoder() {
+        JsoniterSpi.registerTypeEncoder(PageResponse.class, new Encoder() {
             public void encode(Object obj, JsonStream stream) throws IOException {
-                BuletoBetween b = (BuletoBetween) obj;
+                PageResponse b = (PageResponse) obj;
                 stream.writeObjectStart();
-                stream.writeObjectField("from");
-                stream.writeVal(b.from);
+                stream.writeObjectField("page");
+                stream.writeVal(b.page);
                 stream.writeMore();
-                stream.writeObjectField("to");
-                stream.writeVal(b.to);
+                stream.writeObjectField("size");
+                stream.writeVal(b.size);
                 stream.writeMore();
                 stream.writeObjectField("data");
                 stream.writeRaw(b.data);

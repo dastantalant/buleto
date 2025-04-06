@@ -9,13 +9,15 @@ public interface RoundService {
     String findAllBetween(long from, long to);
 
     default String findAllByDay(long day) {
-        if (day == 0) {
+        if (day < DAY) {
             day = System.currentTimeMillis();
         }
         long start = day - (day % DAY);
         long end = start + (DAY - 1);
-        return findAllBetween(start, end);
+        return  findAllBetween(start, end);
     }
 
     String findAllByRoundId(long roundId);
+
+    String findLast();
 }

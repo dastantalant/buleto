@@ -6,12 +6,13 @@ import jakarta.validation.constraints.Min;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/timeline")
+@RequestMapping("/api/timeline")
 public class TimelineControllerAPI {
     private final TimelineService service;
 
@@ -19,36 +20,36 @@ public class TimelineControllerAPI {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping("/page/{page}/{size}")
     public ResponseEntity<String> getPage(
-            @RequestParam(value = "page", defaultValue = "0") @Min(0) int page,
-            @RequestParam(value = "size", defaultValue = "10") @Min(10) @Max(100) int size
+            @PathVariable(value = "page") @Min(0) int page,
+            @PathVariable(value = "size") @Min(10) @Max(50) int size
     ) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.findAll(page, size));
     }
 
-    @GetMapping("/day")
-    public ResponseEntity<String> getDay(@RequestParam(value = "day", defaultValue = "0") @Min(0) long day) {
+//    @GetMapping("/day/{day}")
+    public ResponseEntity<String> getDay(@PathVariable(value = "day") @Min(0) long day) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.findAllByDay(day));
     }
 
-    @GetMapping("/date")
+//    @GetMapping("/date/{from}/{to}")
     public ResponseEntity<String> getFromTo(
-            @RequestParam(value = "from", defaultValue = "0") @Min(0) long from,
-            @RequestParam(value = "to", defaultValue = "0") @Min(0) long to
+            @PathVariable(value = "from") @Min(0) long from,
+            @PathVariable(value = "to") @Min(0) long to
     ) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.findAllBetween(from, to));
     }
 
-    @GetMapping("/round")
+//    @GetMapping("/round/{round}")
     public ResponseEntity<String> getByRoundId(
-            @RequestParam(value = "round", defaultValue = "0") @Min(0) long roundId
+            @PathVariable(value = "round") @Min(0) long roundId
     ) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

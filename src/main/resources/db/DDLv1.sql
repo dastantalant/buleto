@@ -36,6 +36,16 @@ CREATE TABLE user_role
     role_id int8         NOT NULL REFERENCES role (role_id)
 );
 
+CREATE TABLE token
+(
+    token_id bigserial    NOT NULL PRIMARY KEY,
+    email    varchar(255) NOT NULL REFERENCES users (email),
+    token    varchar(500) NOT NULL UNIQUE,
+    expired  boolean      NOT NULL,
+    revoked  boolean      NOT NULL
+);
+CREATE INDEX idx_token_email ON token USING btree (email);
+
 CREATE TABLE player
 (
     player_id bigserial    NOT NULL PRIMARY KEY,
@@ -46,8 +56,9 @@ CREATE TABLE player
 
 CREATE TABLE balance
 (
-    player_id int8           NOT NULL PRIMARY KEY REFERENCES player (player_id),
-    amount    int8 DEFAULT 0 NOT NULL
+    player_id int8              NOT NULL PRIMARY KEY REFERENCES player (player_id),
+    amount    int8    DEFAULT 0 NOT NULL,
+    demo      boolean DEFAULT false
 );
 
 CREATE TABLE balance_snapshot
@@ -159,7 +170,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_generate_cell_id
-    BEFORE INSERT ON cell
+    BEFORE INSERT
+    ON cell
     FOR EACH ROW
 EXECUTE FUNCTION generate_cell_id();
 
@@ -220,34 +232,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION insert_cell(p_begin numeric, p_target numeric, p_cell_number int2)
-    RETURNS bigint AS
-$$
-DECLARE
-    _begin_wave_id  bigint;
-    _target_wave_id bigint;
-    _cell_id        bigint;
-BEGIN
-    _begin_wave_id := insert_wave(p_begin);
-    _target_wave_id := insert_wave(p_target);
-
-    SELECT cell_id
-    INTO _cell_id
-    FROM cell
-    WHERE begin_wave_id = _begin_wave_id
-      AND target_wave_id = _target_wave_id
-      AND cell_number = p_cell_number;
-
-    IF NOT FOUND THEN
-        INSERT INTO cell (begin_wave_id, target_wave_id, cell_number)
-        VALUES (_begin_wave_id, _target_wave_id, p_cell_number)
-        RETURNING cell_id INTO _cell_id;
-    END IF;
-
-    RETURN _cell_id;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION insert_round(
     p_round_id int8,
     p_start_datetime int8,
@@ -303,6 +287,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION insert_cell(p_begin numeric, p_target numeric, p_cell_number int2)
+    RETURNS bigint AS
+$$
+DECLARE
+    _begin_wave_id  bigint;
+    _target_wave_id bigint;
+    _cell_id        bigint;
+BEGIN
+    _begin_wave_id := insert_wave(p_begin);
+    _target_wave_id := insert_wave(p_target);
+
+    SELECT cell_id
+    INTO _cell_id
+    FROM cell
+    WHERE begin_wave_id = _begin_wave_id
+      AND target_wave_id = _target_wave_id
+      AND cell_number = p_cell_number;
+
+    IF NOT FOUND THEN
+        INSERT INTO cell (begin_wave_id, target_wave_id, cell_number)
+        VALUES (_begin_wave_id, _target_wave_id, p_cell_number)
+        RETURNING cell_id INTO _cell_id;
+    END IF;
+
+    RETURN _cell_id;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION insert_round_cell(p_begin numeric, p_target numeric, p_cell_number int2, p_round_id int8)
     RETURNS bigint AS
 $$
@@ -328,12 +340,12 @@ VALUES ('ROOT'),
        ('USER'),
        ('GUEST');
 INSERT INTO users (email, password, enabled)
-VALUES ('root', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true), --das
-       ('admin', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true),
-       ('user', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true),
-       ('guest', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true);
+VALUES ('root@gmail.com', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true), --das
+       ('admin@gmail.com', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true),
+       ('user@gmail.com', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true),
+       ('guest@gmail.com', '$2y$12$L2S3Lugy15PDLwQ5RNfEf.ivT1om32t4Nmb3nb1p8QeNUKLjaF6g6', true);
 INSERT INTO user_role (user_id, role_id)
-VALUES ('root', 1),
-       ('admin', 2),
-       ('user', 3),
-       ('guest', 4);
+VALUES ('root@gmail.com', 1),
+       ('admin@gmail.com', 2),
+       ('user@gmail.com', 3),
+       ('guest@gmail.com', 4);
