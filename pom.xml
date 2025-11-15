@@ -39,6 +39,7 @@
     </properties>
 
     <modules>
+        <module>analyze</module>
         <module>api</module>
         <module>core</module>
         <module>frontend</module>
