@@ -2,210 +2,86 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
+
     <groupId>com.traderoom</groupId>
-    <artifactId>bet</artifactId>
+    <artifactId>parent</artifactId>
     <version>0.0.1</version>
-    <name>bet</name>
-    <description>Bid Management Project</description>
+
     <properties>
-        <java.version>21</java.version>
+        <app.version>0.0.1</app.version>
+        <java.version>25</java.version>
+
+        <spring-boot.version>3.5.7</spring-boot.version> <!-- Oct 23, 2025 -->
+        <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
+        <playwright.version>1.56.0</playwright.version> <!-- Oct 17, 2025 -->
+        <version>2.0.2</version> <!-- Jul 29, 2025 -->
+        <jakarta.mail.version>2.0.1</jakarta.mail.version> <!-- Jul 29, 2025 -->
+
+        <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
+        <tyrus.version>2.2.1</tyrus.version> <!-- Oct 24, 2025 -->
+        <springdoc.version>2.8.14</springdoc.version> <!-- Nov 4, 2025 -->
+        <fastjson2.version>2.0.60</fastjson2.version> <!-- Oct 25, 2025 -->
+        <jsoniter.version>0.9.23</jsoniter.version> <!-- Jul 3, 2018 -->
+
+        <frontend-maven-plugin.verion>1.15.4</frontend-maven-plugin.verion> <!-- Sep 26, 2025 -->
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version> <!-- Sep 22, 2025 -->
+
+        <node.version>24.11.1</node.version> <!-- Nov 11, 2025 -->
+        <npm.version>11.6.2</npm.version> <!-- Oct 08, 2025 -->
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-integration</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.integration</groupId>
-            <artifactId>spring-integration-ip</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.12.6</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
-        </dependency>
+    <modules>
+        <module>api</module>
+        <module>core</module>
+        <module>frontend</module>
+    </modules>
 
-<!--        <dependency>-->
-<!--            <groupId>com.microsoft.playwright</groupId>-->
-<!--            <artifactId>playwright</artifactId>-->
-<!--            <version>1.51.0</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly-client</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
-            <version>2.0.56</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jsoniter</groupId>
-            <artifactId>jsoniter</artifactId>
-            <version>0.9.23</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-antrun-plugin</artifactId>-->
-<!--                <version>3.1.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>checkout-vue</id>-->
-<!--                        <phase>validate</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>run</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <target>-->
-<!--                                <delete dir="target/vue"/>-->
-<!--                                <mkdir dir="target/vue"/>-->
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>${frontend-maven-plugin.verion}</version>
+                </plugin>
 
-<!--                                <exec executable="git" dir="target">-->
-<!--                                    <arg value="clone"/>-->
-<!--                                    <arg value="https://github.com/MakkambaevDastan/buleto-frontend.git"/>-->
-<!--                                    <arg value="vue"/>-->
-<!--                                </exec>-->
-
-<!--                                <exec executable="git" dir="target/vue">-->
-<!--                                    <arg value="checkout"/>-->
-<!--                                    <arg value="tailwind"/>-->
-<!--                                </exec>-->
-
-<!--                                <exec executable="git" dir="target/vue">-->
-<!--                                    <arg value="pull"/>-->
-<!--                                    <arg value="origin"/>-->
-<!--                                    <arg value="tailwind"/>-->
-<!--                                </exec>-->
-
-<!--                                <exec executable="C:/Program Files/nodejs/npm.cmd" dir="target/vue" failonerror="true">-->
-<!--                                    <arg value="install"/>-->
-<!--                                </exec>-->
-
-<!--                                <exec executable="C:/Program Files/nodejs/npm.cmd" dir="target/vue" failonerror="true">-->
-<!--                                    <arg value="run"/>-->
-<!--                                    <arg value="build"/>-->
-<!--                                </exec>-->
-
-<!--                                <delete dir="src/main/resources/static"/>-->
-<!--                                <mkdir dir="src/main/resources/static"/>-->
-
-<!--                                <copy todir="src/main/resources/static">-->
-<!--                                    <fileset dir="target/vue/dist"/>-->
-<!--                                </copy>-->
-<!--                            </target>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-
-        </plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>UTF-8</encoding>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
