@@ -66,3 +66,4 @@ replay_pid*
 node_modules
 /api/src/main/resources/static/app/
 /api/src/main/resources/static/admin/
+/frontend/node/

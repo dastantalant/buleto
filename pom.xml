@@ -19,15 +19,16 @@
         <java.version>21</java.version>
 
         <spring-boot.version>3.5.7</spring-boot.version> <!-- Oct 23, 2025 -->
-        <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
-        <playwright.version>1.56.0</playwright.version> <!-- Oct 17, 2025 -->
-        <selenium.version>4.38.0</selenium.version> <!-- Oct 25, 2025 -->
-        <jakarta.mail.version>2.0.2</jakarta.mail.version> <!-- Jul 29, 2025 -->
 
         <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
+
+        <playwright.version>1.56.0</playwright.version> <!-- Oct 17, 2025 -->
+        <selenium.version>4.38.0</selenium.version> <!-- Oct 25, 2025 -->
+
+        <jakarta.mail.version>2.0.2</jakarta.mail.version> <!-- Jul 29, 2025 -->
+
         <tyrus.version>2.2.1</tyrus.version> <!-- Oct 24, 2025 -->
         <springdoc.version>2.8.14</springdoc.version> <!-- Nov 4, 2025 -->
-        <fastjson2.version>2.0.60</fastjson2.version> <!-- Oct 25, 2025 -->
         <jsoniter.version>0.9.23</jsoniter.version> <!-- Jul 3, 2018 -->
 
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version> <!-- May 31, 2025 -->
@@ -98,11 +99,6 @@
                 <version>${tyrus.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.alibaba.fastjson2</groupId>
-                <artifactId>fastjson2</artifactId>
-                <version>${fastjson2.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.jsoniter</groupId>
                 <artifactId>jsoniter</artifactId>
