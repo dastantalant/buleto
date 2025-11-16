@@ -21,8 +21,8 @@
         <spring-boot.version>3.5.7</spring-boot.version> <!-- Oct 23, 2025 -->
         <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
         <playwright.version>1.56.0</playwright.version> <!-- Oct 17, 2025 -->
-        <version>2.0.2</version> <!-- Jul 29, 2025 -->
-        <jakarta.mail.version>2.0.1</jakarta.mail.version> <!-- Jul 29, 2025 -->
+        <selenium.version>4.38.0</selenium.version> <!-- Oct 25, 2025 -->
+        <jakarta.mail.version>2.0.2</jakarta.mail.version> <!-- Jul 29, 2025 -->
 
         <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
         <tyrus.version>2.2.1</tyrus.version> <!-- Oct 24, 2025 -->
@@ -43,6 +43,7 @@
         <module>api</module>
         <module>core</module>
         <module>frontend</module>
+        <module>monitoring</module>
     </modules>
 
     <dependencyManagement>
@@ -52,6 +53,7 @@
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
@@ -67,11 +69,24 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jsonwebtoken.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.microsoft.playwright</groupId>
                 <artifactId>playwright</artifactId>
                 <version>${playwright.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-java</artifactId>
+                <version>${selenium.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>jakarta.mail</artifactId>
+                <version>${jakarta.mail.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-client</artifactId>
@@ -82,6 +97,7 @@
                 <artifactId>tyrus-container-grizzly-client</artifactId>
                 <version>${tyrus.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.alibaba.fastjson2</groupId>
                 <artifactId>fastjson2</artifactId>
