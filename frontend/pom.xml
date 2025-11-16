@@ -27,13 +27,13 @@
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                         <fileset>
-                            <directory>src/main/frontend/tailwind</directory>
+                            <directory>tailwind</directory>
                             <includes>
                                 <include>node_modules/</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>src/main/frontend/primevue</directory>
+                            <directory>primevue</directory>
                             <includes>
                                 <include>node_modules/</include>
                             </includes>
@@ -63,7 +63,7 @@
                         <id>npm-install-tailwind</id>
                         <goals><goal>npm</goal></goals>
                         <configuration>
-                            <arguments>--prefix src/main/frontend/tailwind install</arguments>
+                            <arguments>--prefix tailwind install</arguments>
                         </configuration>
                     </execution>
 
@@ -72,7 +72,7 @@
                         <goals><goal>npm</goal></goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>--prefix src/main/frontend/tailwind run build</arguments>
+                            <arguments>--prefix tailwind run build</arguments>
                         </configuration>
                     </execution>
 
@@ -80,7 +80,7 @@
                         <id>npm-install-primevue</id>
                         <goals><goal>npm</goal></goals>
                         <configuration>
-                            <arguments>--prefix src/main/frontend/primevue install</arguments>
+                            <arguments>--prefix primevue install</arguments>
                         </configuration>
                     </execution>
 
@@ -89,7 +89,7 @@
                         <goals><goal>npm</goal></goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>--prefix src/main/frontend/primevue run build</arguments>
+                            <arguments>--prefix primevue run build</arguments>
                         </configuration>
                     </execution>
                 </executions>
@@ -107,11 +107,11 @@
                             <outputDirectory>../api/src/main/resources/static</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/main/frontend/tailwind/dist</directory>
+                                    <directory>tailwind/dist</directory>
                                     <targetPath>app</targetPath>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/frontend/primevue/dist</directory>
+                                    <directory>primevue/dist</directory>
                                     <targetPath>admin</targetPath>
                                 </resource>
                             </resources>
