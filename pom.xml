@@ -27,6 +27,7 @@
 
         <jakarta.mail.version>2.0.2</jakarta.mail.version> <!-- Jul 29, 2025 -->
 
+        <grizzly.version>4.0.2</grizzly.version> <!-- Dec 19, 2023 -->
         <tyrus.version>2.2.1</tyrus.version> <!-- Oct 24, 2025 -->
         <springdoc.version>2.8.14</springdoc.version> <!-- Nov 4, 2025 -->
         <jsoniter.version>0.9.23</jsoniter.version> <!-- Jul 3, 2018 -->
@@ -37,6 +38,14 @@
 
         <node.version>24.11.1</node.version> <!-- Nov 11, 2025 -->
         <npm.version>11.6.2</npm.version> <!-- Oct 08, 2025 -->
+
+        <dl4j.version>1.0.0-M2.1</dl4j.version> <!-- Aug 12, 2022 -->
+
+        <guava.version>33.5.0-jre</guava.version> <!-- Sep 17, 2025 -->
+        <commons-math3.version>3.6.1</commons-math3.version> <!-- Mar 17, 2016 -->
+        <commons-lang3.version>3.19.0</commons-lang3.version> <!-- Sep 24, 2025 -->
+        <commons-io.version>2.21.0</commons-io.version> <!-- Nov 07, 2025 -->
+        <commons-compress.version>1.28.0</commons-compress.version> <!-- Jul 30, 2025 -->
     </properties>
 
     <modules>
@@ -45,6 +54,7 @@
         <module>core</module>
         <module>frontend</module>
         <module>monitoring</module>
+        <module>strategy</module>
     </modules>
 
     <dependencyManagement>
@@ -89,6 +99,16 @@
             </dependency>
 
             <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-http-server</artifactId>
+                <version>${grizzly.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-framework</artifactId>
+                <version>${grizzly.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-client</artifactId>
                 <version>${tyrus.version}</version>
@@ -103,6 +123,49 @@
                 <groupId>com.jsoniter</groupId>
                 <artifactId>jsoniter</artifactId>
                 <version>${jsoniter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-core</artifactId>
+                <version>${dl4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.deeplearning4j</groupId>
+                <artifactId>deeplearning4j-modelimport</artifactId>
+                <version>${dl4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-native-platform</artifactId>
+                <version>${dl4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons-math3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
