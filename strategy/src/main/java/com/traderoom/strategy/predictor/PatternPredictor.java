@@ -1,9 +1,10 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 
 import java.util.EnumMap;
@@ -12,43 +13,53 @@ import java.util.Map;
 
 public class PatternPredictor implements Predictor {
 
-    private static final double HOT_SPOT_WEIGHT = 1.2;
-    private static final double COLD_SPOT_WEIGHT = 0.8;
-    private static final double NEVER_SEEN_WEIGHT = 0.5;
-    private static final double CONSECUTIVE_WEIGHT = 1.3;
-    private static final double REPEATING_PATTERN_WEIGHT = 1.1;
-    private static final double LAST_SPOT_WEIGHT = 0.7;
-    private static final int RECENT_WINDOW = 10;
-    private static final int COLD_THRESHOLD = 15;
-    private static final int MIN_PATTERN_SIZE = 4;
-    private static final double DEFAULT_PROBABILITY = 0.0;
+    private final double hotSpotWeight;
+    private final double coldSpotWeight;
+    private final double neverSeenWeight;
+    private final double consecutiveWeight;
+    private final double repeatingPatternWeight;
+    private final double lastSpotWeight;
+    private final int window;
+    private final int cold;
+    private final int min;
+    private final double probability;
+
+    public PatternPredictor() {
+        hotSpotWeight = 1.2;
+        coldSpotWeight = 0.8;
+        neverSeenWeight = 0.5;
+        consecutiveWeight = 1.3;
+        repeatingPatternWeight = 1.1;
+        lastSpotWeight = 0.7;
+        window = 10;
+        cold = 15;
+        min = 4;
+        probability = 0.0;
+    }
+
+    public static PatternPredictor of() {
+        return new PatternPredictor();
+    }
 
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        if (context.getSpotHistory().isEmpty()) {
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        if (state.getMarketData().getHistory().isEmpty()) {
             return List.of();
         }
 
-        EnumMap<Spot, Double> baseFrequency = calculateBaseFrequency(context);
-        EnumMap<Spot, Double> hotColdWeights = calculateHotColdWeights(context);
-        EnumMap<Spot, Double> patternWeights = calculatePatternWeights(context);
+        EnumMap<Spot, Double> baseFrequency = calculateBaseFrequency(state);
+        EnumMap<Spot, Double> hotColdWeights = calculateHotColdWeights(state, config);
+        EnumMap<Spot, Double> patternWeights = calculatePatternWeights(state, config);
 
-        List<Spot> availableSpots = Spot.getAvailableList(context.getRouletteType());
-        if (availableSpots.isEmpty()) {
+        List<Spot> list = Spot.getAvailableList(config.rouletteType());
+        if (list.isEmpty()) {
             return List.of();
         }
 
-        List<SpotPrediction> predictions = availableSpots.stream()
-                .map(spot -> {
-                    double baseProbability = baseFrequency.getOrDefault(spot, DEFAULT_PROBABILITY);
-                    double hotColdWeight = hotColdWeights.getOrDefault(spot, 1.0);
-                    double patternWeight = patternWeights.getOrDefault(spot, 1.0);
-                    double finalProbability = baseProbability * hotColdWeight * patternWeight;
-                    return SpotPrediction.builder()
-                            .spot(spot)
-                            .probability(finalProbability)
-                            .build();
-                })
+        List<SpotPrediction> predictions = list.stream()
+                .map(spot -> SpotPrediction.of(spot, (baseFrequency.getOrDefault(spot, probability)
+                        * hotColdWeights.getOrDefault(spot, 1.0)
+                        * patternWeights.getOrDefault(spot, 1.0))))
                 .filter(prediction -> prediction.probability() > 0)
                 .toList();
 
@@ -56,22 +67,22 @@ public class PatternPredictor implements Predictor {
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
+    public List<BetTypePrediction> getNextType(State state, Config config) {
         return List.of();
     }
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
+    public ColorPrediction getNextColor(State state, Config config) {
         return ColorPrediction.builder()
-                .red(DEFAULT_PROBABILITY)
-                .black(DEFAULT_PROBABILITY)
-                .green(DEFAULT_PROBABILITY)
+                .red(probability)
+                .black(probability)
+                .green(probability)
                 .build();
     }
 
-    private EnumMap<Spot, Double> calculateBaseFrequency(Context context) {
+    private EnumMap<Spot, Double> calculateBaseFrequency(State state) {
         EnumMap<Spot, Double> frequency = new EnumMap<>(Spot.class);
-        Map<Spot, Integer> spotCount = context.getSpotFrequencies();
+        Map<Spot, Integer> spotCount = state.getMarketData().getFrequencies();
         long totalCount = spotCount.values().stream().mapToLong(Integer::longValue).sum();
 
         if (totalCount == 0) {
@@ -82,11 +93,11 @@ public class PatternPredictor implements Predictor {
         return frequency;
     }
 
-    private EnumMap<Spot, Double> calculateHotColdWeights(Context context) {
+    private EnumMap<Spot, Double> calculateHotColdWeights(State state, Config config) {
         EnumMap<Spot, Double> weights = new EnumMap<>(Spot.class);
-        List<Spot> history = context.getSpotHistory();
+        List<Spot> history = state.getMarketData().getHistory();
         int historySize = history.size();
-        int window = Math.min(RECENT_WINDOW, historySize);
+        int wind = Math.min(window, historySize);
 
         EnumMap<Spot, Integer> recentCount = new EnumMap<>(Spot.class);
         EnumMap<Spot, Integer> lastAppearance = new EnumMap<>(Spot.class);
@@ -94,50 +105,51 @@ public class PatternPredictor implements Predictor {
         for (int i = 0; i < historySize; i++) {
             Spot spot = history.get(i);
             lastAppearance.put(spot, i);
-            if (i >= historySize - window) {
+            if (i >= historySize - wind) {
                 recentCount.merge(spot, 1, Integer::sum);
             }
         }
 
-        for (Spot spot : Spot.getAvailableList(context.getRouletteType())) {
+        for (Spot spot : Spot.getAvailableList(config.rouletteType())) {
             double weight = 1.0;
             int recentAppearances = recentCount.getOrDefault(spot, 0);
             if (recentAppearances > 1) {
-                weight *= HOT_SPOT_WEIGHT;
+                weight *= hotSpotWeight;
             }
             Integer lastPos = lastAppearance.get(spot);
             if (lastPos != null) {
                 int gapSinceLastAppearance = historySize - lastPos - 1;
-                if (gapSinceLastAppearance > COLD_THRESHOLD) {
-                    weight *= COLD_SPOT_WEIGHT;
+                if (gapSinceLastAppearance > cold) {
+                    weight *= coldSpotWeight;
                 }
             } else {
-                weight *= NEVER_SEEN_WEIGHT;
+                weight *= neverSeenWeight;
             }
             weights.put(spot, weight);
         }
         return weights;
     }
 
-    private EnumMap<Spot, Double> calculatePatternWeights(Context context) {
+    private EnumMap<Spot, Double> calculatePatternWeights(State state, Config config) {
         EnumMap<Spot, Double> weights = new EnumMap<>(Spot.class);
-        List<Spot> availableSpots = Spot.getAvailableList(context.getRouletteType());
-        if (context.getSpotHistory().size() < MIN_PATTERN_SIZE - 1) {
-            availableSpots.forEach(spot -> weights.put(spot, 1.0));
+        List<Spot> list = Spot.getAvailableList(config.rouletteType());
+        if (state.getMarketData().getHistory().size() < min - 1) {
+            list.forEach(spot -> weights.put(spot, 1.0));
             return weights;
         }
 
-        Spot lastSpot = context.getLastSpot();
-        for (Spot spot : availableSpots) {
+        Spot lastSpot = state.getMarketData().getLastSpot();
+        assert lastSpot != null;
+        for (Spot spot : list) {
             double weight = 1.0;
             if (isConsecutiveNumber(lastSpot, spot)) {
-                weight *= CONSECUTIVE_WEIGHT;
+                weight *= consecutiveWeight;
             }
-            if (hasRepeatingPattern(context, spot)) {
-                weight *= REPEATING_PATTERN_WEIGHT;
+            if (hasRepeatingPattern(state, spot)) {
+                weight *= repeatingPatternWeight;
             }
             if (lastSpot == spot) {
-                weight *= LAST_SPOT_WEIGHT;
+                weight *= lastSpotWeight;
             }
             weights.put(spot, weight);
         }
@@ -150,9 +162,9 @@ public class PatternPredictor implements Predictor {
         return num1 > 0 && num2 > 0 && Math.abs(num1 - num2) == 1;
     }
 
-    private boolean hasRepeatingPattern(Context context, Spot targetSpot) {
-        List<Spot> history = context.getSpotHistory();
-        if (history.size() < MIN_PATTERN_SIZE) {
+    private boolean hasRepeatingPattern(State state, Spot targetSpot) {
+        List<Spot> history = state.getMarketData().getHistory();
+        if (history.size() < min) {
             return false;
         }
         int size = history.size();
@@ -160,22 +172,10 @@ public class PatternPredictor implements Predictor {
     }
 
     private List<SpotPrediction> normalizeProbabilities(List<SpotPrediction> predictions) {
-        double totalProbability = predictions.stream()
+        double sum = predictions.stream()
                 .mapToDouble(SpotPrediction::probability)
                 .sum();
-        if (totalProbability <= 0 || Double.isNaN(totalProbability) || Double.isInfinite(totalProbability)) {
-            return predictions.stream()
-                    .map(p -> SpotPrediction.builder()
-                            .spot(p.spot())
-                            .probability(DEFAULT_PROBABILITY)
-                            .build())
-                    .toList();
-        }
-        return predictions.stream()
-                .map(p -> SpotPrediction.builder()
-                        .spot(p.spot())
-                        .probability(p.probability() / totalProbability)
-                        .build())
-                .toList();
+        boolean bool = (sum <= 0 || Double.isNaN(sum) || Double.isInfinite(sum));
+        return predictions.stream().map(p -> SpotPrediction.of(p.spot(), bool ? probability : p.probability() / sum)).toList();
     }
 }

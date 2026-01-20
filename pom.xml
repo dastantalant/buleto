@@ -13,12 +13,22 @@
     <artifactId>buleto</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
-
+    <modules>
+        <module>analyze</module>
+        <module>api</module>
+        <module>core</module>
+        <module>frontend</module>
+        <module>monitoring</module>
+        <module>strategy</module>
+    </modules>
     <properties>
         <app.version>0.0.1</app.version>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
 
-        <spring-boot.version>3.5.7</spring-boot.version> <!-- Oct 23, 2025 -->
+        <spring-boot.version>4.0.0</spring-boot.version> <!-- Oct 23, 2025 -->
+        <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
+        <netty.version>4.2.9.Final</netty.version> <!-- Dec 15, 2025 -->
+        <snakeyaml.version>2.5</snakeyaml.version> <!-- Aug 31, 2025 -->
 
         <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
 
@@ -35,6 +45,7 @@
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version> <!-- May 31, 2025 -->
         <frontend-maven-plugin.verion>1.15.4</frontend-maven-plugin.verion> <!-- Sep 26, 2025 -->
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version> <!-- Mar 24, 2023 -->
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version><!-- Sep 22, 2025 -->
 
         <node.version>24.11.1</node.version> <!-- Nov 11, 2025 -->
         <npm.version>11.6.2</npm.version> <!-- Oct 08, 2025 -->
@@ -48,14 +59,7 @@
         <commons-compress.version>1.28.0</commons-compress.version> <!-- Jul 30, 2025 -->
     </properties>
 
-    <modules>
-        <module>analyze</module>
-        <module>api</module>
-        <module>core</module>
-        <module>frontend</module>
-        <module>monitoring</module>
-        <module>strategy</module>
-    </modules>
+
 
     <dependencyManagement>
         <dependencies>
@@ -63,6 +67,22 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-buffer</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+                <scope>compile</scope>
             </dependency>
 
             <dependency>
@@ -123,23 +143,6 @@
                 <groupId>com.jsoniter</groupId>
                 <artifactId>jsoniter</artifactId>
                 <version>${jsoniter.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.deeplearning4j</groupId>
-                <artifactId>deeplearning4j-core</artifactId>
-                <version>${dl4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.deeplearning4j</groupId>
-                <artifactId>deeplearning4j-modelimport</artifactId>
-                <version>${dl4j.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-native-platform</artifactId>
-                <version>${dl4j.version}</version>
             </dependency>
 
             <dependency>

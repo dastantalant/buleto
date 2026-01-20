@@ -3,60 +3,53 @@ package com.traderoom.strategy.utils;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.Bet;
+
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @UtilityClass
 public final class BetHelper {
 
-    private static final String MESSAGE = "Выпавший номер (spot) не может быть null";
+    private static final String MESSAGE = "The drawn number (spot) cannot be null";
 
-    public static long getTotalBetValue(List<Bet> betList) {
-        return (betList == null || betList.isEmpty()) ? 0 :
-                betList.stream()
-                        .mapToLong(Bet::value)
-                        .sum();
+    public static long getTotalBetValue(List<Bet> list) {
+        return (list == null || list.isEmpty()) ? 0 : list.stream()
+                .mapToLong(Bet::value)
+                .sum();
     }
 
-    public static long getTotalPayout(List<Bet> betList, Spot spot) {
+    public static long getTotalPayout(List<Bet> list, Spot spot) {
         Objects.requireNonNull(spot, MESSAGE);
-        return (betList == null || betList.isEmpty()) ? 0 :
-                betList.stream()
-                        .filter(bet -> isWin(bet, spot))
-                        .mapToLong(bet -> bet.value() * bet.type().getReturnMultiplier())
-                        .sum();
+        return (list == null || list.isEmpty()) ? 0 : list.stream()
+                .filter(bet -> isWin(bet, spot))
+                .mapToLong(bet -> bet.value() * bet.type().getReturnMultiplier())
+                .sum();
     }
 
-    public static boolean hasWin(List<Bet> betList, Spot spot) {
+    public static boolean hasWin(List<Bet> list, Spot spot) {
         Objects.requireNonNull(spot, MESSAGE);
-        return betList != null && !betList.isEmpty() && betList.stream().anyMatch(bet -> isWin(bet, spot));
+        return list != null && !list.isEmpty() && list.stream().anyMatch(bet -> isWin(bet, spot));
     }
 
     public static boolean isWin(Bet bet, Spot spot) {
-        Objects.requireNonNull(bet, "Ставка (bet) не может быть null.");
         Objects.requireNonNull(spot, MESSAGE);
         return isWin(bet.type(), spot);
     }
 
     public static boolean isWin(BetType type, Spot spot) {
-        Objects.requireNonNull(type, "Тип ставки (type) не может быть null.");
         Objects.requireNonNull(spot, MESSAGE);
-        return type.getWinningSpots().contains(spot);
+        return type.getWinning().contains(spot);
     }
 
-    public static BetType getStraightUpBetType(Spot spot) {
+    public static BetType getStraightUp(Spot spot) {
         Objects.requireNonNull(spot, MESSAGE);
         return BetType.getStraightUpBetFor(spot);
     }
 
-    public static List<BetType> getAllCoveringBets(Spot spot) {
+    public static List<BetType> getAllCovering(Spot spot) {
         Objects.requireNonNull(spot, MESSAGE);
-        return Stream.of(BetType.values())
-                .filter(betType -> betType.getWinningSpots().contains(spot))
-                .collect(Collectors.toList());
+        return BetType.getAllCovering(spot);
     }
 }

@@ -1,7 +1,6 @@
 package com.traderoom.strategy.enums;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,10 +11,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
-@Slf4j
 public enum BetType {
-    // === Straight Up ===
     STRAIGHT_UP_1(35, Spot.SPOT_01),
     STRAIGHT_UP_2(35, Spot.SPOT_02),
     STRAIGHT_UP_3(35, Spot.SPOT_03),
@@ -55,7 +53,6 @@ public enum BetType {
     ZERO(35, EnumSet.of(RouletteType.EUROPEAN, RouletteType.AMERICAN), Spot.SPOT_0),
     DOUBLE_ZERO(35, EnumSet.of(RouletteType.AMERICAN), Spot.SPOT_00),
 
-    // === Split ===
     SPLIT_1_2(17, Spot.SPOT_01, Spot.SPOT_02),
     SPLIT_2_3(17, Spot.SPOT_02, Spot.SPOT_03),
     SPLIT_35_36(17, Spot.SPOT_35, Spot.SPOT_36),
@@ -66,19 +63,15 @@ public enum BetType {
     SPLIT_26_29(17, Spot.SPOT_26, Spot.SPOT_29),
     SPLIT_28_31(17, Spot.SPOT_28, Spot.SPOT_31),
 
-    // === Street ===
     STREET_1_2_3(11, Spot.SPOT_01, Spot.SPOT_02, Spot.SPOT_03),
     STREET_34_35_36(11, Spot.SPOT_34, Spot.SPOT_35, Spot.SPOT_36),
 
-    // === Corner ===
     CORNER_1_2_4_5(8, Spot.SPOT_01, Spot.SPOT_02, Spot.SPOT_04, Spot.SPOT_05),
     CORNER_32_33_35_36(8, Spot.SPOT_32, Spot.SPOT_33, Spot.SPOT_35, Spot.SPOT_36),
 
-    // === Six Line ===
     SIX_LINE_1_2_3_4_5_6(5, Spot.SPOT_01, Spot.SPOT_02, Spot.SPOT_03, Spot.SPOT_04, Spot.SPOT_05, Spot.SPOT_06),
     SIX_LINE_31_32_33_34_35_36(5, Spot.SPOT_31, Spot.SPOT_32, Spot.SPOT_33, Spot.SPOT_34, Spot.SPOT_35, Spot.SPOT_36),
 
-    // === Special with Zero ===
     TOP_LINE_OR_BASKET(6, EnumSet.of(RouletteType.AMERICAN), Spot.SPOT_0, Spot.SPOT_00, Spot.SPOT_01, Spot.SPOT_02, Spot.SPOT_03),
     TRIO_0_1_2(11, EnumSet.of(RouletteType.EUROPEAN), Spot.SPOT_0, Spot.SPOT_01, Spot.SPOT_02),
     TRIO_0_2_3(11, EnumSet.of(RouletteType.EUROPEAN), Spot.SPOT_0, Spot.SPOT_02, Spot.SPOT_03),
@@ -87,7 +80,6 @@ public enum BetType {
     STREET_0_00_2(11, EnumSet.of(RouletteType.AMERICAN), Spot.SPOT_0, Spot.SPOT_00, Spot.SPOT_02),
     CORNER_0_1_2_3(8, EnumSet.of(RouletteType.EUROPEAN), Spot.SPOT_0, Spot.SPOT_01, Spot.SPOT_02, Spot.SPOT_03),
 
-    // === Outside Bets ===
     FIRST_COLUMN(2, Spot.FIRST_COLUMN_SPOTS),
     SECOND_COLUMN(2, Spot.SECOND_COLUMN_SPOTS),
     THIRD_COLUMN(2, Spot.THIRD_COLUMN_SPOTS),
@@ -105,7 +97,7 @@ public enum BetType {
     private final int payout;
     private final EnumSet<RouletteType> availableIn;
     @Getter
-    private final Set<Spot> winningSpots;
+    private final Set<Spot> winning;
 
     private static final Map<Spot, BetType> STRAIGHT_UP_MAP = new EnumMap<>(Spot.class);
     private static final Map<RouletteType, List<BetType>> AVAILABLE_BETS_CACHE = new ConcurrentHashMap<>();
@@ -119,7 +111,6 @@ public enum BetType {
                 try {
                     STRAIGHT_UP_MAP.put(spot, BetType.valueOf(betTypeName));
                 } catch (IllegalArgumentException e) {
-                    log.error("Не удалось найти BetType для {}", betTypeName);
                 }
             }
         }
@@ -133,7 +124,7 @@ public enum BetType {
     BetType(int payout, EnumSet<RouletteType> availableIn, Spot... spots) {
         this.payout = payout;
         this.availableIn = availableIn;
-        winningSpots = spots.length == 0 ? EnumSet.noneOf(Spot.class) : EnumSet.copyOf(List.of(spots));
+        winning = spots.length == 0 ? EnumSet.noneOf(Spot.class) : EnumSet.copyOf(List.of(spots));
     }
 
     BetType(int payout, Set<Spot> spots) {
@@ -143,9 +134,15 @@ public enum BetType {
     BetType(int payout, EnumSet<RouletteType> availableIn, Set<Spot> spots) {
         this.payout = payout;
         this.availableIn = availableIn;
-        winningSpots = (spots == null || spots.isEmpty())
+        winning = (spots == null || spots.isEmpty())
                 ? EnumSet.noneOf(Spot.class)
                 : EnumSet.copyOf(spots);
+    }
+
+    public static List<BetType> getAllCovering(Spot spot) {
+        return Stream.of(BetType.values())
+                .filter(type -> type.getWinning().contains(spot))
+                .toList();
     }
 
     public static List<BetType> getAvailableList(RouletteType rouletteType) {

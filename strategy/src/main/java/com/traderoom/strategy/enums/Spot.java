@@ -1,7 +1,5 @@
 package com.traderoom.strategy.enums;
 
-import com.traderoom.strategy.application.Context;
-import com.traderoom.strategy.Constant;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -12,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,43 +80,48 @@ public enum Spot {
 
     private static final Map<Integer, Spot> SPOT_BY_NUMBER =
             Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(Spot::getNumber, s -> s));
-    private static final Map<RouletteType, List<Spot>> AVAILABLE_SPOTS_CACHE =
-            new EnumMap<>(RouletteType.class);
-    public static final Map<RouletteType, Spot[]> WHEEL_LAYOUTS = new EnumMap<>(RouletteType.class);
-    public static final Map<RouletteType, Map<Spot, Integer>> WHEEL_POSITIONS_CACHE = new EnumMap<>(RouletteType.class);
+    private static final Map<RouletteType, List<Spot>> AVAILABLE_SPOTS_CACHE;
+    public static final Map<RouletteType, Spot[]> WHEEL_LAYOUTS;
+    public static final Map<RouletteType, Map<Spot, Integer>> WHEEL_POSITIONS_CACHE;
 
     static {
-        WHEEL_LAYOUTS.put(RouletteType.ONE_TO_36, new Spot[]{
+        Map<RouletteType, List<Spot>> availableSpots = new EnumMap<>(RouletteType.class);
+        Map<RouletteType, Spot[]> wheelLayouts = new EnumMap<>(RouletteType.class);
+        Map<RouletteType, Map<Spot, Integer>> wheelPositions = new EnumMap<>(RouletteType.class);
+
+        wheelLayouts.put(RouletteType.ONE_TO_36, new Spot[]{
                 SPOT_01, SPOT_02, SPOT_03, SPOT_04, SPOT_05, SPOT_06, SPOT_07, SPOT_08, SPOT_09,
                 SPOT_10, SPOT_11, SPOT_12, SPOT_13, SPOT_14, SPOT_15, SPOT_16, SPOT_17, SPOT_18,
                 SPOT_19, SPOT_20, SPOT_21, SPOT_22, SPOT_23, SPOT_24, SPOT_25, SPOT_26, SPOT_27,
                 SPOT_28, SPOT_29, SPOT_30, SPOT_31, SPOT_32, SPOT_33, SPOT_34, SPOT_35, SPOT_36
         });
-        WHEEL_LAYOUTS.put(RouletteType.EUROPEAN, new Spot[]{
+        wheelLayouts.put(RouletteType.EUROPEAN, new Spot[]{
                 SPOT_0, SPOT_32, SPOT_15, SPOT_19, SPOT_04, SPOT_21, SPOT_02, SPOT_25,
                 SPOT_17, SPOT_34, SPOT_06, SPOT_27, SPOT_13, SPOT_36, SPOT_11, SPOT_30, SPOT_08,
                 SPOT_23, SPOT_10, SPOT_05, SPOT_24, SPOT_16, SPOT_33, SPOT_01, SPOT_20, SPOT_14,
                 SPOT_31, SPOT_09, SPOT_22, SPOT_18, SPOT_29, SPOT_07, SPOT_28, SPOT_12, SPOT_35,
                 SPOT_03, SPOT_26
         });
-        WHEEL_LAYOUTS.put(RouletteType.AMERICAN, new Spot[]{
+        wheelLayouts.put(RouletteType.AMERICAN, new Spot[]{
                 SPOT_0, SPOT_28, SPOT_09, SPOT_26, SPOT_30, SPOT_11, SPOT_07, SPOT_20, SPOT_32, SPOT_17,
                 SPOT_05, SPOT_22, SPOT_34, SPOT_15, SPOT_03, SPOT_24, SPOT_36, SPOT_13, SPOT_01, SPOT_00,
                 SPOT_27, SPOT_10, SPOT_25, SPOT_29, SPOT_12, SPOT_08, SPOT_19, SPOT_31, SPOT_18, SPOT_06,
                 SPOT_21, SPOT_33, SPOT_16, SPOT_04, SPOT_23, SPOT_35, SPOT_14, SPOT_02
         });
-
         for (RouletteType type : RouletteType.values()) {
-            AVAILABLE_SPOTS_CACHE.put(type, getAvailableSpotsUncached(type));
-            Spot[] layout = WHEEL_LAYOUTS.get(type);
+            availableSpots.put(type, getAvailableSpotsUncached(type));
+            Spot[] layout = wheelLayouts.get(type);
             if (layout != null) {
                 Map<Spot, Integer> positions = new EnumMap<>(Spot.class);
                 for (int i = 0; i < layout.length; i++) {
                     positions.put(layout[i], i);
                 }
-                WHEEL_POSITIONS_CACHE.put(type, Collections.unmodifiableMap(positions));
+                wheelPositions.put(type, Collections.unmodifiableMap(positions));
             }
         }
+        WHEEL_LAYOUTS = Collections.unmodifiableMap(wheelLayouts);
+        AVAILABLE_SPOTS_CACHE = Collections.unmodifiableMap(availableSpots);
+        WHEEL_POSITIONS_CACHE = Collections.unmodifiableMap(wheelPositions);
 
         EnumSet<Spot> reds = EnumSet.noneOf(Spot.class);
         EnumSet<Spot> blacks = EnumSet.noneOf(Spot.class);
@@ -174,7 +176,7 @@ public enum Spot {
     public static Spot getByNumber(int number) {
         Spot spot = SPOT_BY_NUMBER.get(number);
         if (spot == null) {
-            throw new IllegalArgumentException("Не существует номера: " + number);
+            throw new IllegalArgumentException("The number does not exist: " + number);
         }
         return spot;
     }
@@ -190,37 +192,7 @@ public enum Spot {
     }
 
     public static List<Spot> getAvailableList(RouletteType rouletteType) {
-        return AVAILABLE_SPOTS_CACHE.getOrDefault(rouletteType, Collections.emptyList());
-    }
-
-    public static Spot getRandomNextSpot(Context context) {
-        List<Spot> availableSpots = getAvailableList(context.getRouletteType());
-        return switch (context.getSpotGenerateType()) {
-            case RANDOM -> getRandomSpotFromList(availableSpots);
-            case ROTATION_NUMBER -> availableSpots.get((int) (context.getCurrentLoopCount() % availableSpots.size()));
-            case ROTATION_WHEEL -> {
-                Spot[] wheel = WHEEL_LAYOUTS.get(context.getRouletteType());
-                yield wheel[(int) (context.getCurrentLoopCount() % wheel.length)];
-            }
-            case RANDOM_RED_ONLY -> getRandomSpotFromIntersection(availableSpots, REDS);
-            case RANDOM_BLACK_ONLY -> getRandomSpotFromIntersection(availableSpots, BLACKS);
-            case RANDOM_EXCEPT_ONE -> getRandomSpotWithFilter(availableSpots, s -> s != SPOT_01);
-        };
-    }
-
-    private static Spot getRandomSpotFromList(List<Spot> spots) {
-        if (spots == null || spots.isEmpty()) {
-            throw new IllegalStateException("Невозможно выбрать случайное поле из пустого списка.");
-        }
-        return spots.get(Constant.RANDOM.nextInt(spots.size()));
-    }
-
-    private static Spot getRandomSpotWithFilter(List<Spot> spots, Predicate<Spot> filter) {
-        return getRandomSpotFromList(spots.stream().filter(filter).toList());
-    }
-
-    private static Spot getRandomSpotFromIntersection(List<Spot> source, Set<Spot> subset) {
-        return getRandomSpotFromList(source.stream().filter(subset::contains).toList());
+        return AVAILABLE_SPOTS_CACHE.getOrDefault(rouletteType, List.of());
     }
 
     public boolean isRed() {
@@ -279,13 +251,13 @@ public enum Spot {
         return WHEEL_POSITIONS_CACHE.getOrDefault(rouletteType, Collections.emptyMap()).getOrDefault(this, -1);
     }
 
-    public int getPhysicalDistance(Spot otherSpot, RouletteType rouletteType) {
-        Objects.requireNonNull(otherSpot, "otherSpot не может быть null");
+    public int getPhysicalDistance(Spot spot, RouletteType rouletteType) {
+        Objects.requireNonNull(spot, "spot cannot be null");
         int thisPos = getWheelPosition(rouletteType);
-        int otherPos = otherSpot.getWheelPosition(rouletteType);
+        int otherPos = spot.getWheelPosition(rouletteType);
 
         if (thisPos == -1 || otherPos == -1) {
-            throw new IllegalArgumentException("Одно или оба поля недоступны в указанном типе рулетки.");
+            throw new IllegalArgumentException("One or both fields are not available in the specified roulette type");
         }
 
         int wheelSize = WHEEL_LAYOUTS.get(rouletteType).length;
@@ -296,5 +268,9 @@ public enum Spot {
 
     public boolean isFirstDozenOrZeroAndDoubleZero() {
         return FIRST_DOZEN_OR_ZERO_SPOTS.contains(this);
+    }
+
+    public static Map<RouletteType, Spot[]> getWheelLayouts() {
+        return WHEEL_LAYOUTS;
     }
 }

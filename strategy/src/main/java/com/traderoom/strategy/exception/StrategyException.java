@@ -1,0 +1,10 @@
+package com.traderoom.strategy.exception;
+
+public class StrategyException extends RuntimeException {
+    public StrategyException() {
+    }
+
+    public StrategyException(String message) {
+        super(message);
+    }
+}

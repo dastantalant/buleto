@@ -1,16 +1,16 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 import com.traderoom.strategy.utils.BetHelper;
 
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
 
 public class CountPredictor implements Predictor {
 
@@ -24,39 +24,36 @@ public class CountPredictor implements Predictor {
         count = 0;
     }
 
+    private double calculate(double occurrences) {
+        return count == 0 ? 0.0 : occurrences / count;
+    }
+
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        validateContext(context);
-        updateParameter(context);
-        return Spot.getAvailableList(context.getRouletteType()).stream()
-                .map(spot -> SpotPrediction.builder()
-                        .spot(spot)
-                        .probability(calculateProbability(spotMap.getOrDefault(spot, 0L)))
-                        .build())
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        updateParameter(state, config);
+        return Spot.getAvailableList(config.rouletteType())
+                .stream()
+                .map(spot -> SpotPrediction.of(spot, calculate(spotMap.getOrDefault(spot, 0L))))
                 .toList();
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
-        validateContext(context);
-        updateParameter(context);
-        return BetType.getAvailableList(context.getRouletteType()).stream()
-                .map(type -> BetTypePrediction.builder()
-                        .type(type)
-                        .probability(calculateProbability(typeMap.getOrDefault(type, 0L)))
-                        .build())
+    public List<BetTypePrediction> getNextType(State state, Config config) {
+        updateParameter(state, config);
+        return BetType.getAvailableList(config.rouletteType())
+                .stream()
+                .map(type -> BetTypePrediction.of(type, calculate(typeMap.getOrDefault(type, 0L))))
                 .toList();
     }
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
-        validateContext(context);
-        updateParameter(context);
+    public ColorPrediction getNextColor(State state, Config config) {
+        updateParameter(state, config);
 
         double red = 0;
         double black = 0;
         double green = 0;
-        for (Spot spot : Spot.getAvailableList(context.getRouletteType())) {
+        for (Spot spot : Spot.getAvailableList(config.rouletteType())) {
             long spotCount = spotMap.getOrDefault(spot, 0L);
             if (spot.isRed()) {
                 red += spotCount;
@@ -66,29 +63,17 @@ public class CountPredictor implements Predictor {
                 green += spotCount;
             }
         }
-        return ColorPrediction.builder()
-                .red(calculateProbability(red))
-                .black(calculateProbability(black))
-                .green(calculateProbability(green))
-                .build();
+        return ColorPrediction.of(calculate(red), calculate(black), calculate(green));
     }
 
-    private void updateParameter(Context context) {
-        spotMap.merge(context.getLastSpot(), 1L, Long::sum);
-        for (BetType type : BetType.getAvailableList(context.getRouletteType())) {
-            if (BetHelper.isWin(type, context.getLastSpot())) {
+    private void updateParameter(State state, Config config) {
+        spotMap.merge(state.getMarketData().getLastSpot(), 1L, Long::sum);
+        for (BetType type : BetType.getAvailableList(config.rouletteType())) {
+            if (BetHelper.isWin(type, state.getMarketData().getLastSpot())) {
                 typeMap.merge(type, 1L, Long::sum);
             }
         }
         count++;
     }
 
-    private double calculateProbability(double occurrences) {
-        return count == 0 ? 0.0 : occurrences / count;
-    }
-
-    private void validateContext(Context context) {
-        Objects.requireNonNull(context, "Context must not be null");
-        Objects.requireNonNull(context.getRouletteType(), "Roulette type must not be null");
-    }
 }

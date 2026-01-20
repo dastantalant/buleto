@@ -1,115 +1,99 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class EfficientCountPredictor implements Predictor {
 
+    public static EfficientCountPredictor of() {
+        return new EfficientCountPredictor();
+    }
+
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        validateContext(context);
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        Map<Spot, Integer> frequencies = state.getMarketData().getFrequencies();
+        double size = state.getMarketData().getHistory().size();
 
-        Map<Spot, Integer> frequencies = context.getSpotFrequencies();
-        double totalCount = context.getSpotHistory().size();
-
-        if (totalCount == 0) {
+        if (size == 0) {
             return List.of();
         }
-
-        List<Spot> availableSpots = Spot.getAvailableList(context.getRouletteType());
-
-        return availableSpots.stream()
-                .map(spot -> SpotPrediction.builder()
-                        .spot(spot)
-                        .probability(calculateProbability(frequencies.getOrDefault(spot, 0), totalCount))
-                        .build())
+        return Spot.getAvailableList(config.rouletteType())
+                .stream()
+                .map(spot -> SpotPrediction.of(spot, calculate(frequencies.getOrDefault(spot, 0), size)))
                 .toList();
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
-        validateContext(context);
+    public List<BetTypePrediction> getNextType(State state, Config config) {
+        Map<Spot, Integer> frequencies = state.getMarketData().getFrequencies();
+        double size = state.getMarketData().getHistory().size();
 
-        Map<Spot, Integer> spotFrequencies = context.getSpotFrequencies();
-        double totalCount = context.getSpotHistory().size();
-
-        if (totalCount == 0) {
+        if (size == 0) {
             return List.of();
         }
 
-        List<BetType> availableTypes = BetType.getAvailableList(context.getRouletteType());
-        EnumMap<BetType, Long> typeFrequencies = new EnumMap<>(BetType.class);
+        List<BetType> types = BetType.getAvailableList(config.rouletteType());
+        EnumMap<BetType, Long> betMap = new EnumMap<>(BetType.class);
 
-        EnumMap<Spot, List<BetType>> spotToWinningTypesMap = new EnumMap<>(Spot.class);
-        for (BetType type : availableTypes) {
-            for (Spot winningSpot : type.getWinningSpots()) {
-                spotToWinningTypesMap.computeIfAbsent(winningSpot, k -> new java.util.ArrayList<>()).add(type);
+        EnumMap<Spot, List<BetType>> spotMap = new EnumMap<>(Spot.class);
+        for (BetType type : types) {
+            for (Spot spot : type.getWinning()) {
+                spotMap.computeIfAbsent(spot, _ -> new ArrayList<>()).add(type);
             }
         }
 
-        for (Map.Entry<Spot, Integer> spotEntry : spotFrequencies.entrySet()) {
-            Spot spot = spotEntry.getKey();
-            long count = spotEntry.getValue();
-            List<BetType> winningTypes = spotToWinningTypesMap.get(spot);
-            if (winningTypes != null) {
-                for (BetType type : winningTypes) {
-                    typeFrequencies.merge(type, count, Long::sum);
+        for (Map.Entry<Spot, Integer> entry : frequencies.entrySet()) {
+            List<BetType> winning = spotMap.get(entry.getKey());
+            if (winning != null) {
+                for (BetType type : winning) {
+                    betMap.merge(type, Long.valueOf(entry.getValue()), Long::sum);
                 }
             }
         }
-        return availableTypes.stream()
-                .map(type -> BetTypePrediction.builder()
-                        .type(type)
-                        .probability(calculateProbability(typeFrequencies.getOrDefault(type, 0L), totalCount))
-                        .build())
+        return types.stream()
+                .map(type -> BetTypePrediction.of(type, calculate(betMap.getOrDefault(type, 0L), size)))
                 .toList();
     }
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
-        validateContext(context);
-        Map<Spot, Integer> frequencies = context.getSpotFrequencies();
-        double totalCount = context.getSpotHistory().size();
+    public ColorPrediction getNextColor(State state, Config config) {
+        Map<Spot, Integer> frequencies = state.getMarketData().getFrequencies();
+        double size = state.getMarketData().getHistory().size();
 
-        if (totalCount == 0) {
-            return ColorPrediction.builder().red(0).black(0).green(0).build();
+        if (size == 0) {
+            return ColorPrediction.of();
         }
 
-        double redCount = frequencies.entrySet().stream()
-                .filter(e -> e.getKey().isRed())
+        double red = frequencies.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isRed())
                 .mapToDouble(Map.Entry::getValue)
                 .sum();
-        double blackCount = frequencies.entrySet().stream()
-                .filter(e -> e.getKey().isBlack())
+        double black = frequencies.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isBlack())
                 .mapToDouble(Map.Entry::getValue)
                 .sum();
-        double greenCount = frequencies.entrySet().stream()
-                .filter(e -> e.getKey().isGreen())
+        double green = frequencies.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isGreen())
                 .mapToDouble(Map.Entry::getValue)
                 .sum();
 
-        return ColorPrediction.builder()
-                .red(calculateProbability(redCount, totalCount))
-                .black(calculateProbability(blackCount, totalCount))
-                .green(calculateProbability(greenCount, totalCount))
-                .build();
+        return ColorPrediction.of(calculate(red, size), calculate(black, size), calculate(green, size));
     }
 
-    private void validateContext(Context context) {
-        Objects.requireNonNull(context, "Context must not be null");
-        Objects.requireNonNull(context.getSpotHistory(), "Spot history must not be null");
-    }
-
-    private double calculateProbability(double occurrences, double totalCount) {
+    private double calculate(double occurrences, double totalCount) {
         return totalCount == 0 ? 0.0 : occurrences / totalCount;
     }
 }

@@ -1,26 +1,24 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 import com.traderoom.strategy.utils.BetHelper;
-import com.traderoom.strategy.utils.LogHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkovPredictor implements Predictor {
 
-    private static final int MIN_HISTORY_SIZE = 2;
-    private static final double DEFAULT_PROBABILITY = 0.0;
-
+    private final int min;
+    private final double probability;
     private final Map<Spot, Map<Spot, Long>> spotMap;
     private final Map<BetType, Map<BetType, Long>> typeMap;
     private long transitionCount;
@@ -28,165 +26,128 @@ public class MarkovPredictor implements Predictor {
     public MarkovPredictor() {
         spotMap = new ConcurrentHashMap<>();
         typeMap = new ConcurrentHashMap<>();
+        min = 2;
+        probability = 0.0;
         transitionCount = 0;
     }
 
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        validateContext(context);
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
-            return Collections.emptyList();
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < min) {
+            return List.of();
+        }
+        updateParameters(state, config);
+        Map<Spot, Long> transitions = spotMap.getOrDefault(state.getMarketData().getLastSpot(), Collections.emptyMap());
+
+        List<Spot> list = Spot.getAvailableList(config.rouletteType());
+        if (list.isEmpty()) {
+            return List.of();
         }
 
-        updateParameters(context);
-        Map<Spot, Long> transitions = spotMap.getOrDefault(context.getLastSpot(), Collections.emptyMap());
-
-        List<Spot> availableSpots = Spot.getAvailableList(context.getRouletteType());
-        if (availableSpots.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<SpotPrediction> predictions = new ArrayList<>();
-        for (Spot spot : availableSpots) {
-            double probability = calculateProbability(transitions.getOrDefault(spot, 0L));
-            if (probability > 0) {
-                predictions.add(SpotPrediction.builder()
-                        .spot(spot)
-                        .probability(probability)
-                        .build());
+        List<SpotPrediction> predictions = new ArrayList<>(list.size());
+        for (Spot spot : list) {
+            double prob = calculate(transitions.getOrDefault(spot, 0L));
+            if (prob > 0) {
+                predictions.add(SpotPrediction.of(spot, prob));
             }
         }
-        return Collections.unmodifiableList(predictions);
+        return List.copyOf(predictions);
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
-        validateContext(context);
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
-            return Collections.emptyList();
+    public List<BetTypePrediction> getNextType(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < min) {
+            return List.of();
         }
-
-        updateParameters(context);
-        List<BetType> lastSpotBetTypes = new ArrayList<>();
-        for (BetType type : BetType.getAvailableList(context.getRouletteType())) {
-            if (BetHelper.isWin(type, context.getLastSpot())) {
-                lastSpotBetTypes.add(type);
+        updateParameters(state, config);
+        List<BetType> types = BetType.getAvailableList(config.rouletteType());
+        List<BetType> lasts = new ArrayList<>();
+        for (BetType type : types) {
+            if (BetHelper.isWin(type, state.getMarketData().getLastSpot())) {
+                lasts.add(type);
             }
         }
 
-        List<BetType> availableTypes = BetType.getAvailableList(context.getRouletteType());
-        if (availableTypes.isEmpty()) {
-            return Collections.emptyList();
+        if (types.isEmpty()) {
+            return List.of();
         }
 
         List<BetTypePrediction> predictions = new ArrayList<>();
-        for (BetType lastType : lastSpotBetTypes) {
+        for (BetType lastType : lasts) {
             Map<BetType, Long> transitions = typeMap.getOrDefault(lastType, Collections.emptyMap());
-            for (BetType nextType : availableTypes) {
-                double probability = calculateProbability(transitions.getOrDefault(nextType, 0L));
-                if (probability > 0) {
-                    predictions.add(BetTypePrediction.builder()
-                            .type(nextType)
-                            .probability(probability)
-                            .build());
+            for (BetType nextType : types) {
+                double prob = calculate(transitions.getOrDefault(nextType, 0L));
+                if (prob > 0) {
+                    predictions.add(BetTypePrediction.of(nextType, prob));
                 }
             }
         }
-        return Collections.unmodifiableList(predictions);
+        return List.copyOf(predictions);
     }
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
-        validateContext(context);
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
-            return ColorPrediction.builder()
-                    .red(DEFAULT_PROBABILITY)
-                    .black(DEFAULT_PROBABILITY)
-                    .green(DEFAULT_PROBABILITY)
-                    .build();
+    public ColorPrediction getNextColor(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < min) {
+            return ColorPrediction.of(probability, probability, probability);
         }
 
-        Map<Spot, Long> transitions = spotMap.getOrDefault(context.getLastSpot(), Collections.emptyMap());
+        Map<Spot, Long> transitions = spotMap.getOrDefault(state.getMarketData().getLastSpot(), Collections.emptyMap());
 
-        double redCount = 0, blackCount = 0, greenCount = 0;
+        double red = 0;
+        double black = 0;
+        double green = 0;
         for (Map.Entry<Spot, Long> entry : transitions.entrySet()) {
             Spot spot = entry.getKey();
             long count = entry.getValue();
             if (spot.isRed()) {
-                redCount += count;
+                red += count;
             } else if (spot.isBlack()) {
-                blackCount += count;
+                black += count;
             } else if (spot.isGreen()) {
-                greenCount += count;
+                green += count;
             }
         }
 
-        double total = redCount + blackCount + greenCount;
-        return ColorPrediction.builder()
-                .red(total == 0 ? DEFAULT_PROBABILITY : redCount / total)
-                .black(total == 0 ? DEFAULT_PROBABILITY : blackCount / total)
-                .green(total == 0 ? DEFAULT_PROBABILITY : greenCount / total)
-                .build();
+        double total = red + black + green;
+        return ColorPrediction.of(total == 0 ? probability : red / total,
+                total == 0 ? probability : black / total,
+                total == 0 ? probability : green / total);
     }
 
-    private void updateParameters(Context context) {
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
+    private void updateParameters(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < min) {
             return;
         }
 
-        List<Spot> history = context.getSpotHistory();
+        List<Spot> history = state.getMarketData().getHistory();
         Spot spot1 = history.get(history.size() - 2);
-        Spot spot2 = context.getLastSpot();
+        Spot spot2 = state.getMarketData().getLastSpot();
 
-        spotMap.computeIfAbsent(spot1, k -> new ConcurrentHashMap<>())
+        spotMap.computeIfAbsent(spot1, _ -> new ConcurrentHashMap<>())
                 .merge(spot2, 1L, Long::sum);
 
-        List<BetType> betTypeList1 = new ArrayList<>();
-        List<BetType> betTypeList2 = new ArrayList<>();
-        for (BetType type : BetType.getAvailableList(context.getRouletteType())) {
+        List<BetType> list1 = new ArrayList<>();
+        List<BetType> list2 = new ArrayList<>();
+        for (BetType type : BetType.getAvailableList(config.rouletteType())) {
             if (BetHelper.isWin(type, spot1)) {
-                betTypeList1.add(type);
+                list1.add(type);
             }
             if (BetHelper.isWin(type, spot2)) {
-                betTypeList2.add(type);
+                list2.add(type);
             }
         }
 
-        for (BetType betType1 : betTypeList1) {
-            Map<BetType, Long> transitions = typeMap.computeIfAbsent(betType1, k -> new ConcurrentHashMap<>());
-            for (BetType betType2 : betTypeList2) {
-                transitions.merge(betType2, 1L, Long::sum);
+        for (BetType type1 : list1) {
+            Map<BetType, Long> transitions = typeMap.computeIfAbsent(type1, _ -> new ConcurrentHashMap<>());
+            for (BetType type2 : list2) {
+                transitions.merge(type2, 1L, Long::sum);
             }
         }
         transitionCount++;
     }
 
-    private void validateContext(Context context) {
-        Objects.requireNonNull(context, "Context не должен быть null");
-        Objects.requireNonNull(context.getSpotHistory(), "Spot history не должен быть null");
-        Objects.requireNonNull(context.getRouletteType(), "Roulette type не должен быть null");
-    }
-
-    private double calculateProbability(long occurrences) {
-        return transitionCount == 0 ? DEFAULT_PROBABILITY : (double) occurrences / transitionCount;
-    }
-
-    private void dumpMarkovMap() {
-        LogHelper.debug("--- spotMarkovMap start ---");
-        for (Map.Entry<Spot, Map<Spot, Long>> entry1 : spotMap.entrySet()) {
-            for (Map.Entry<Spot, Long> entry2 : entry1.getValue().entrySet()) {
-                LogHelper.debug(entry1.getKey().name() + "-" + entry2.getKey().name() + ": " + entry2.getValue());
-            }
-        }
-        LogHelper.debug("--- spotMarkovMap end ---");
-
-        LogHelper.debug("--- typeMarkovMap start ---");
-        for (Map.Entry<BetType, Map<BetType, Long>> entry1 : typeMap.entrySet()) {
-            for (Map.Entry<BetType, Long> entry2 : entry1.getValue().entrySet()) {
-                LogHelper.debug(entry1.getKey().name() + "-" + entry2.getKey().name() + ": " + entry2.getValue());
-            }
-        }
-        LogHelper.debug("--- typeMarkovMap end ---");
+    private double calculate(long occurrences) {
+        return transitionCount == 0 ? probability : (double) occurrences / transitionCount;
     }
 
     public void reset() {

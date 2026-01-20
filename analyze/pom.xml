@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>analyze</artifactId>
-    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

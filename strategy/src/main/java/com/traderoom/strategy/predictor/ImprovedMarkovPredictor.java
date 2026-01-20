@@ -1,149 +1,137 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.RouletteType;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 import com.traderoom.strategy.utils.BetHelper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ImprovedMarkovPredictor implements Predictor {
 
-    private static final int MIN_HISTORY_SIZE = 2;
-
-    private final Map<Spot, Map<Spot, Long>> spotTransitions;
-    private final Map<BetType, Map<BetType, Long>> typeTransitions;
+    private final int size;
+    private final Map<Spot, Map<Spot, Long>> spots;
+    private final Map<BetType, Map<BetType, Long>> types;
 
     public ImprovedMarkovPredictor() {
-        spotTransitions = new ConcurrentHashMap<>();
-        typeTransitions = new ConcurrentHashMap<>();
+        spots = new ConcurrentHashMap<>();
+        types = new ConcurrentHashMap<>();
+        size = 2;
     }
 
-    public void updateModel(Spot[] lastTransition, RouletteType rouletteType) {
-        if (lastTransition == null || lastTransition.length < 2) {
+    public void updateModel(Spot[] lasts, RouletteType type) {
+        if (lasts == null || lasts.length < 2) {
             return;
         }
-        Spot spot1 = lastTransition[0];
-        Spot spot2 = lastTransition[1];
+        Spot spot1 = lasts[0];
+        Spot spot2 = lasts[1];
 
-        spotTransitions.computeIfAbsent(spot1, k -> new ConcurrentHashMap<>())
+        spots.computeIfAbsent(spot1, k -> new ConcurrentHashMap<>())
                 .merge(spot2, 1L, Long::sum);
 
-        List<BetType> winningTypes1 = findWinningTypes(spot1, rouletteType);
-        List<BetType> winningTypes2 = findWinningTypes(spot2, rouletteType);
+        List<BetType> types1 = findTypes(spot1, type);
+        List<BetType> types2 = findTypes(spot2, type);
 
-        for (BetType type1 : winningTypes1) {
-            Map<BetType, Long> nextStates = typeTransitions.computeIfAbsent(type1, k -> new ConcurrentHashMap<>());
-            for (BetType type2 : winningTypes2) {
-                nextStates.merge(type2, 1L, Long::sum);
+        for (BetType type1 : types1) {
+            Map<BetType, Long> map = types.computeIfAbsent(type1, _ -> new ConcurrentHashMap<>());
+            for (BetType type2 : types2) {
+                map.merge(type2, 1L, Long::sum);
             }
         }
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
-        validateContext(context);
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
+    public List<BetTypePrediction> getNextType(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < size) {
             return List.of();
         }
 
-        List<Spot> history = context.getSpotHistory();
-        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, context.getRouletteType());
+        List<Spot> history = state.getMarketData().getHistory();
+        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
 
-        List<BetType> lastWinningTypes = findWinningTypes(context.getLastSpot(), context.getRouletteType());
+        List<BetType> betTypes = findTypes(state.getMarketData().getLastSpot(), config.rouletteType());
 
-        Map<BetType, Long> nextTypeCounts = lastWinningTypes.stream()
-                .flatMap(lastType -> {
-                    Map<BetType, Long> transitions = typeTransitions.getOrDefault(lastType, Map.of());
-                    return transitions.entrySet().stream();
-                })
+        Map<BetType, Long> collect = betTypes.stream()
+                .flatMap(lastType -> types.getOrDefault(lastType, Map.of()).entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingLong(Map.Entry::getValue)));
-
-        if (nextTypeCounts.isEmpty()) {
+        if (collect.isEmpty()) {
             return List.of();
         }
 
-        final double totalTransitions = nextTypeCounts.values().stream().mapToDouble(Long::doubleValue).sum();
-        if (totalTransitions == 0) {
-            return List.of();
-        }
-
-        return nextTypeCounts.entrySet().stream()
-                .map(entry -> BetTypePrediction.builder()
-                        .type(entry.getKey())
-                        .probability(entry.getValue() / totalTransitions)
-                        .build())
-                .filter(p -> p.probability() > 0)
-                .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability())) // Сортируем для удобства
+        final double sum = collect.values()
+                .stream()
+                .mapToDouble(Long::doubleValue)
+                .sum();
+        return (sum == 0) ? List.of()
+                : collect.entrySet().stream()
+                .map(entry -> BetTypePrediction.of(entry.getKey(), entry.getValue() / sum))
+                .filter(item -> item.probability() > 0)
+                .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability()))
                 .toList();
     }
 
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        validateContext(context);
-        if (context.getSpotHistory().size() < MIN_HISTORY_SIZE) {
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        if (state.getMarketData().getHistory().size() < size) {
             return List.of();
         }
 
-        List<Spot> history = context.getSpotHistory();
-        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, context.getRouletteType());
+        List<Spot> history = state.getMarketData().getHistory();
+        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
 
-        Map<Spot, Long> nextSpotCounts = spotTransitions.getOrDefault(context.getLastSpot(), Map.of());
+        Map<Spot, Long> map = spots.getOrDefault(state.getMarketData().getLastSpot(), Map.of());
 
-        if(nextSpotCounts.isEmpty()){
+        if (map.isEmpty()) {
             return List.of();
         }
 
-        final double totalTransitions = nextSpotCounts.values().stream().mapToDouble(Long::doubleValue).sum();
-        if(totalTransitions == 0){
-            return List.of();
-        }
-
-        return nextSpotCounts.entrySet().stream()
-                .map(entry -> SpotPrediction.builder()
-                        .spot(entry.getKey())
-                        .probability(entry.getValue() / totalTransitions)
-                        .build())
+        final double sum = map.values()
+                .stream()
+                .mapToDouble(Long::doubleValue)
+                .sum();
+        return (sum == 0) ? List.of()
+                : map.entrySet().stream()
+                .map(entry -> SpotPrediction.of(entry.getKey(), entry.getValue() / sum))
                 .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability()))
                 .toList();
     }
 
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
-        List<SpotPrediction> spotPredictions = getNextSpotPredictionList(context);
+    public ColorPrediction getNextColor(State state, Config config) {
+        List<SpotPrediction> list = getNextSpot(state, config);
 
-        if (spotPredictions.isEmpty()) {
-            return ColorPrediction.builder().red(0).black(0).green(0).build();
+        if (list.isEmpty()) {
+            return ColorPrediction.of();
         }
 
-        double redProb = spotPredictions.stream().filter(p -> p.spot().isRed()).mapToDouble(SpotPrediction::probability).sum();
-        double blackProb = spotPredictions.stream().filter(p -> p.spot().isBlack()).mapToDouble(SpotPrediction::probability).sum();
-        double greenProb = spotPredictions.stream().filter(p -> p.spot().isGreen()).mapToDouble(SpotPrediction::probability).sum();
+        double red = list.stream()
+                .filter(item -> item.spot().isRed())
+                .mapToDouble(SpotPrediction::probability)
+                .sum();
+        double black = list.stream()
+                .filter(item -> item.spot().isBlack())
+                .mapToDouble(SpotPrediction::probability)
+                .sum();
+        double green = list.stream()
+                .filter(item -> item.spot().isGreen())
+                .mapToDouble(SpotPrediction::probability)
+                .sum();
 
-        return ColorPrediction.builder()
-                .red(redProb)
-                .black(blackProb)
-                .green(greenProb)
-                .build();
+        return ColorPrediction.of(red, black, green);
     }
 
-    private List<BetType> findWinningTypes(Spot spot, RouletteType rouletteType) {
+    private List<BetType> findTypes(Spot spot, RouletteType rouletteType) {
         return BetType.getAvailableList(rouletteType).stream()
                 .filter(type -> BetHelper.isWin(type, spot))
                 .toList();
-    }
-
-    private void validateContext(Context context) {
-        Objects.requireNonNull(context, "Context must not be null");
-        Objects.requireNonNull(context.getSpotHistory(), "Spot history must not be null");
     }
 }

@@ -1,9 +1,10 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.application.Context;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.BetTypePrediction;
 import com.traderoom.strategy.model.ColorPrediction;
+import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 
 import java.util.List;
@@ -12,39 +13,28 @@ import java.util.Objects;
 public class DifferencePredictor implements Predictor {
 
     @Override
-    public List<SpotPrediction> getNextSpotPredictionList(Context context) {
-        Objects.requireNonNull(context, "Context must not be null");
-        Objects.requireNonNull(context.getSpotHistory(), "Spot history must not be null");
-        Objects.requireNonNull(context.getLastSpot(), "Last spot must not be null");
-        if (context.getSpotHistory().isEmpty()) {
+    public List<SpotPrediction> getNextSpot(State state, Config config) {
+        List<Spot> history = state.getMarketData().getHistory();
+        if (history.isEmpty()) {
             return List.of();
         }
-        double average = context.getSpotHistory().stream()
+        double average = history.stream()
                 .mapToInt(Spot::getNumber)
                 .average()
                 .orElse(0.0);
-        int lastSpotNumber = context.getLastSpot().getNumber();
-        return List.of(SpotPrediction.builder()
-                        .spot(Spot.getByNumber((int) (lastSpotNumber + average)))
-                        .probability(0.5)
-                        .build(),
-                SpotPrediction.builder()
-                        .spot(Spot.getByNumber((int) (lastSpotNumber - average)))
-                        .probability(0.5)
-                        .build());
+        int lastSpot = Objects.requireNonNull(state.getMarketData().getLastSpot()).getNumber();
+        Spot spot1 = Spot.getByNumber((int) (lastSpot + average));
+        Spot spot2 = Spot.getByNumber((int) (lastSpot - average));
+        return SpotPrediction.of(spot1, 0.5, spot2, 0.5);
     }
 
     @Override
-    public List<BetTypePrediction> getNextBetTypePredictionList(Context context) {
+    public List<BetTypePrediction> getNextType(State state, Config config) {
         return List.of();
     }
 
     @Override
-    public ColorPrediction getNextColorPrediction(Context context) {
-        return ColorPrediction.builder()
-                .red(0)
-                .black(0)
-                .green(0)
-                .build();
+    public ColorPrediction getNextColor(State state, Config config) {
+        return ColorPrediction.of();
     }
 }
