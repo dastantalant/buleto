@@ -1,6 +1,7 @@
 package com.traderoom.strategy.runner;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
+import com.traderoom.strategy.base.AbstractStateStrategy;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.context.Snapshot;
 import com.traderoom.strategy.model.context.State;
@@ -13,23 +14,28 @@ public class BetRunner implements IRunner {
 
     private final IStrategy strategy;
     private final State state;
-    private Snapshot snapshot;
+    private transient Snapshot snapshot;
     private boolean lastApplied;
 
     public BetRunner(IStrategy strategy) {
         this.strategy = strategy;
-        state = State.of(strategy.getStartBalance());
-    }
-
-    public static IRunner of(IStrategy strategy) {
-        return new BetRunner(strategy);
+//        if (strategy instanceof AbstractStateStrategy stateStrategy) {
+//            state = State.of(strategy.getStartBalance(), stateStrategy.getMarketData());
+//        } else {
+            state = State.of(strategy.getStartBalance());
+//        }
     }
 
     @Override
     public Snapshot apply(Spot spot) {
-        if (canContinue()) {
-            snapshot = strategy.playTurn(spot, state);
+        if (lastApplied) {
+            return canContinue() ? applyInternal(spot) : stop();
         }
+        return snapshot;
+    }
+
+    private Snapshot applyInternal(Spot spot) {
+        snapshot = strategy.playTurn(spot, state);
         return snapshot;
     }
 
@@ -57,12 +63,18 @@ public class BetRunner implements IRunner {
 
     @Override
     public Snapshot stop() {
-        return strategy.endGame(state);
+        snapshot = strategy.endGame(state);
+        return snapshot;
     }
 
     @Override
-    public boolean isStopped() {
-        return strategy.isStopped();
+    public boolean isLive() {
+        return strategy.isLive();
+    }
+
+    @Override
+    public IStrategy getStrategy() {
+        return strategy;
     }
 
     @Override

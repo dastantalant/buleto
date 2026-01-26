@@ -9,45 +9,69 @@
     </parent>
 
     <artifactId>monitoring</artifactId>
-    <packaging>jar</packaging>
 
+    <properties>
+        <hikari.version>5.1.0</hikari.version> <!-- Aug 19, 2025 -->
+        <postgresql.version>42.7.9</postgresql.version> <!-- Jan 15, 2026 -->
+        <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version> <!-- Nov 29, 2025 -->
+        <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version> <!-- Sep 13, 2025 -->
+    </properties>
     <dependencies>
-
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <groupId>com.traderoom</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.traderoom</groupId>
+            <artifactId>strategy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jsoniter</groupId>
-            <artifactId>jsoniter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikari.version}</version>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <target>${java.version}</target>
+                    <source>${java.version}</source>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.traderoom.monitoring.MonitoringMain</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

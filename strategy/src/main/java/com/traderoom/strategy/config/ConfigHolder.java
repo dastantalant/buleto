@@ -1,17 +1,17 @@
 package com.traderoom.strategy.config;
 
+import com.traderoom.core.logging.FastLogger;
 import com.traderoom.strategy.model.context.Config;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-@Slf4j
 public enum ConfigHolder {
     CONFIG_HOLDER;
 
@@ -20,7 +20,7 @@ public enum ConfigHolder {
     static {
         List<Config> configs = ConfigLoader.load("config.yml");
         if (configs.isEmpty()) {
-            log.warn("load config failed, no config found!");
+            FastLogger.warn("load config failed, no config found!");
         }
         CONFIG_HOLDER.add(configs);
     }
@@ -55,8 +55,8 @@ public enum ConfigHolder {
         configs.clear();
     }
 
-    public  Collection<Config> getAll() {
-        return configs.values();
+    public Set<Config> getAll() {
+        return new HashSet<>(configs.values());
     }
 
     public Map<String, Config> map() {

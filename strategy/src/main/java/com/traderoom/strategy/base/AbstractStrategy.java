@@ -1,37 +1,51 @@
 package com.traderoom.strategy.base;
 
+import com.traderoom.core.util.StringUtil;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.Snapshot;
 import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.monitoring.Subscriber;
+import com.traderoom.strategy.api.Subscriber;
+import com.traderoom.strategy.stop.StopCondition;
 import com.traderoom.strategy.utils.BetHelper;
 
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.traderoom.strategy.enums.Constants.BALANCE_HISTORY_SIZE;
 
 public abstract class AbstractStrategy extends AbstractMetricStrategy {
-    private final UUID id = UUID.randomUUID();
     @Getter
     private final String name;
     private final Set<Subscriber> subscribers = new CopyOnWriteArraySet<>();
+    @Getter
+    private final List<StopCondition> stopConditions;
 
     protected AbstractStrategy(Config config) {
-        super(config);
-        name = getClass().getSimpleName();
+        this(config, "");
     }
 
     protected AbstractStrategy(Config config, String name) {
         super(config);
-        this.name = name;
+        this.name = StringUtil.isBlank(name) ? getClass().getSimpleName() : name;
+        stopConditions = config.createConditions();
+//        // Логический разогрев (прогон onRoundCustom)
+//        if (!config.initialHistory().isEmpty()) {
+//            // Внимание: State уже заполнен в super(),
+//            // мы просто триггерим логику обновления предикторов
+//            for (Integer num : config.initialHistory()) {
+//                try {
+//                    Spot s = Spot.getByNumber(num);
+//                    // Вызываем хук с пустыми ставками
+//                    onRoundCustom(Collections.emptyList(), s);
+//                } catch (Exception ignored) {}
+//            }
+//        }
     }
 
     @Override
@@ -106,29 +120,16 @@ public abstract class AbstractStrategy extends AbstractMetricStrategy {
 
     @Override
     public final Snapshot publish(Snapshot snapshot) {
-        for (Subscriber subscriber : subscribers) {
-            subscriber.onRound(snapshot);
+        for (Subscriber sub : subscribers) {
+            sub.onRound(snapshot);
         }
         return snapshot;
     }
 
     protected final Snapshot publishGameEnd(Snapshot snapshot) {
-        for (Subscriber subscriber : subscribers) {
-            subscriber.onGameEnd(snapshot);
+        for (Subscriber sub : subscribers) {
+            sub.onGameEnd(snapshot);
         }
         return snapshot;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AbstractStrategy that = (AbstractStrategy) obj;
-        return Objects.equals(id, that.id);
     }
 }

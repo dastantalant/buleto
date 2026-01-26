@@ -1,16 +1,15 @@
 package com.traderoom.strategy.config;
 
+import com.traderoom.core.logging.FastLogger;
 import com.traderoom.strategy.model.context.Config;
 import org.yaml.snakeyaml.Yaml;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
 @UtilityClass
 public class ConfigLoader {
 
@@ -26,7 +25,7 @@ public class ConfigLoader {
         ConfigProperties root = new Yaml().loadAs(in, ConfigProperties.class);
 
         if (root.getConfig() == null || root.getConfig().isEmpty()) {
-            log.warn("Config list is empty");
+            FastLogger.warn("Config list is empty");
             return Collections.emptyList();
         }
 

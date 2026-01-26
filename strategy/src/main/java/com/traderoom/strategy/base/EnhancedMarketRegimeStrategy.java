@@ -1,10 +1,10 @@
 package com.traderoom.strategy.base;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.base.strategies.MeanReversionStrategy;
 import com.traderoom.strategy.base.strategies.ParoliStrategy;

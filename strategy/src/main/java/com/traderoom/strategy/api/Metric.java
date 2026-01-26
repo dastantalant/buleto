@@ -2,8 +2,10 @@ package com.traderoom.strategy.api;
 
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.model.context.Config;
+import com.traderoom.strategy.model.context.Snapshot;
 import com.traderoom.strategy.risk.RiskManager;
 
+import java.util.Deque;
 import java.util.List;
 
 public interface Metric extends Naming {

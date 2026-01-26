@@ -2,7 +2,7 @@ package com.traderoom.strategy.base.strategies;
 
 import com.traderoom.strategy.enums.Constants;
 import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;

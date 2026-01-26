@@ -5,6 +5,7 @@ import com.traderoom.strategy.enums.Spot;
 
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 @ToString
-public class MarketData {
+public class MarketData implements Serializable {
     private final List<Spot> spotHistory;
     private final Map<Spot, Integer> spotFrequencies;
     private long totalProcessed;

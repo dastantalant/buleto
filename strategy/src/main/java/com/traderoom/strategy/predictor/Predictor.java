@@ -6,9 +6,10 @@ import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.model.SpotPrediction;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface Predictor {
+public interface Predictor  extends Serializable {
 
     List<SpotPrediction> getNextSpot(State state, Config config);
 

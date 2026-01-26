@@ -1,5 +1,10 @@
 package com.traderoom.strategy.model.context;
 
+import com.traderoom.core.csv.CsvColumn;
+import com.traderoom.core.csv.CsvFile;
+import com.traderoom.core.csv.CsvIgnore;
+import com.traderoom.core.csv.Separator;
+import com.traderoom.strategy.config.BetListConverter;
 import com.traderoom.strategy.enums.Spot;
 import com.traderoom.strategy.model.Bet;
 
@@ -61,28 +66,47 @@ import java.util.List;
  *                          <br>📝 <i>Значение:</i> {@code true}, если сработал StopLoss, TakeProfit или закончились деньги.
  */
 @Builder
+@CsvFile(separator = Separator.SEMICOLON)
 public record Snapshot(
+        @CsvIgnore
         String strategyName,
+        @CsvColumn(value = "ROUND", order = 1)
         long roundNumber,
+        @CsvColumn(value = "BALANCE", order = 2)
         long balance,
+        @CsvColumn(value = "START", order = 20)
         long startBalance,
+        @CsvColumn(value = "LAST_PROF", order = 4)
         long lastProfit,
+        @CsvColumn(value = "NET_PROF", order = 5)
         long netProfit,
+        @CsvColumn(value = "ROUND_BET", order = 6)
         long roundBetAmount,
+        @CsvColumn(value = "ROI%", order = 7)
         double roiPercentage,
+        @CsvColumn(value = "WIN_RATE%", order = 8)
         double winRatePercentage,
+        @CsvColumn(value = "CURRENT_DD", order = 9)
         double currentDrawdown,
+        @CsvColumn(value = "MAX_DD", order = 10)
         double maxDrawdown,
+        @CsvColumn(value = "PF", order = 11)
         double profitFactor,
+        @CsvColumn(value = "LAST_SPOT", order = 12)
         Spot lastSpot,
+        @CsvColumn(value = "WON", order = 13)
         long totalWon,
+        @CsvColumn(value = "LOST", order = 14)
         long totalLost,
+        @CsvColumn(value = "WAGERED", order = 15)
         long totalWagered,
+        @CsvColumn(value = "PAYOUT", order = 16)
         long totalPayout,
+        @CsvColumn(value = "BETS", order = 18, converter = BetListConverter.class)
         List<Bet> lastBets,
-        boolean isStopped,
-        @Deprecated
-        int tempCount
+//        @CsvColumn(value = "STATUS", order = 17, converter = StopedConverter.class)
+        @CsvIgnore
+        boolean isStopped
 ) {
     /**
      * calculate field roiPercentage

@@ -1,11 +1,12 @@
 package com.traderoom.strategy.base;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
+import com.traderoom.strategy.enums.Tag;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.enums.BetType;
 import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.predictor.EfficientCountPredictor;
 import com.traderoom.strategy.predictor.MultiOrderMarkovPredictor;
@@ -28,14 +29,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@AStrategy
+@AStrategy(tags = Tag.MANAGER)
 public class DynamicAllocationManager extends BaseManager {
 
     private static final double GROWTH_FACTOR = 1.15;
-    private static final double DECAY_FACTOR = 0.85;
-    private static final double MIN_WEIGHT_THRESHOLD = 0.05;
+    private static final double DECAY_FACTOR = 0.95; // 0.85
+    private static final double MIN_WEIGHT_THRESHOLD = 0.01; // 0.05
     private static final double MAX_WEIGHT_CAP = 10.0;
-    private static final double RESURRECTION_THRESHOLD = 0.5;
+    private static final double RESURRECTION_THRESHOLD = 0.1; // 0.5
 
     private final List<StrategyTracker> trackers;
 

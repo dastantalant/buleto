@@ -1,5 +1,6 @@
 package com.traderoom.strategy.api;
 
+import com.traderoom.strategy.IStrategy;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.predictor.EfficientCountPredictor;
 import com.traderoom.strategy.predictor.ImprovedMarkovPredictor;

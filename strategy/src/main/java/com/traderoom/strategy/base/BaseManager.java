@@ -1,10 +1,9 @@
 package com.traderoom.strategy.base;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
 import com.traderoom.strategy.api.Manager;
-import com.traderoom.strategy.enums.Constants;
 import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.factory.StrategyFactory;
+import com.traderoom.strategy.StrategyFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public abstract class BaseManager extends AbstractStrategy implements Manager {
     protected BaseManager(Config config) {
         super(config);
         portfolio = new ArrayList<>();
-        strategyFactory = StrategyFactory.getFactory(Constants.PACKAGE);
+        strategyFactory = StrategyFactory.getInstance();
     }
 
     @Override
@@ -43,6 +42,6 @@ public abstract class BaseManager extends AbstractStrategy implements Manager {
     }
 
     public Optional<IStrategy> create(Class<? extends IStrategy> clazz, Config config) {
-        return strategyFactory.create(clazz, config);
+        return Optional.ofNullable(strategyFactory.create(clazz, config));
     }
 }

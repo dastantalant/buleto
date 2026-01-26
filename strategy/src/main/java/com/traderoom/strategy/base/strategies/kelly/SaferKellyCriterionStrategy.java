@@ -1,6 +1,6 @@
 package com.traderoom.strategy.base.strategies.kelly;
 
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;

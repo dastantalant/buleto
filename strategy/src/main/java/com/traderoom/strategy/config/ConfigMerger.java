@@ -1,6 +1,7 @@
 package com.traderoom.strategy.config;
 
 
+import com.traderoom.strategy.ConfigBuilder;
 import com.traderoom.strategy.model.context.Config;
 
 public final class ConfigMerger {

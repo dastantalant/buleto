@@ -9,17 +9,26 @@
     </parent>
 
     <artifactId>api</artifactId>
-    <packaging>jar</packaging>
 
+    <properties>
+        <jsoniter.version>0.9.23</jsoniter.version> <!-- Jul 3, 2018 -->
+        <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
+
+    </properties>
     <dependencies>
-        <!-- Зависимость от вашего модуля с общей логикой -->
         <dependency>
             <groupId>com.traderoom</groupId>
             <artifactId>core</artifactId>
-            <version>${project.version}</version> <!-- Версию для своих модулей оставляем -->
+        </dependency>
+        <dependency>
+            <groupId>com.traderoom</groupId>
+            <artifactId>monitoring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.traderoom</groupId>
+            <artifactId>strategy</artifactId>
         </dependency>
 
-        <!-- Spring Boot зависимости. Версии приходят из spring-boot-starter-parent -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -48,36 +57,29 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
+            <version>${jsonwebtoken.version}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <scope>runtime</scope>
+            <version>${jsonwebtoken.version}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <scope>runtime</scope>
+            <version>${jsonwebtoken.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly-client</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.jsoniter</groupId>
             <artifactId>jsoniter</artifactId>
+            <version>${jsoniter.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <dependency>
@@ -106,8 +108,20 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <target>${java.version}</target>
+                    <source>${java.version}</source>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,6 +1,6 @@
 package com.traderoom.strategy.enums;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
 
 import java.util.Collection;
 import java.util.Optional;

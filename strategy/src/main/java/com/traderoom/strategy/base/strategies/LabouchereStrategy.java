@@ -2,18 +2,19 @@ package com.traderoom.strategy.base.strategies;
 
 import com.traderoom.strategy.base.AbstractStrategy;
 import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
 @AStrategy
 public class LabouchereStrategy extends AbstractStrategy {
     private final BetType type = BetType.RED;
-    private final LinkedList<Long> sequence = new LinkedList<>();
+    private final Deque<Long> sequence = new LinkedList<>();
     private final long unit;
 
     public LabouchereStrategy(Config config) {

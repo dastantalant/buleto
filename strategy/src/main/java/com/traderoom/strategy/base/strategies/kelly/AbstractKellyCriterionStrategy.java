@@ -1,6 +1,6 @@
 package com.traderoom.strategy.base.strategies.kelly;
 
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.base.AbstractStrategy;
 import com.traderoom.strategy.predictor.Predictor;
 import com.traderoom.strategy.enums.BetType;

@@ -6,41 +6,34 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+        <version>4.0.0</version>
     </parent>
     
     <groupId>com.traderoom</groupId>
     <artifactId>buleto</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
+
     <modules>
-        <module>analyze</module>
         <module>api</module>
         <module>core</module>
         <module>frontend</module>
         <module>monitoring</module>
         <module>strategy</module>
+        <module>analyzer</module>
     </modules>
+
     <properties>
         <app.version>0.0.1</app.version>
         <java.version>25</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <spring-boot.version>4.0.0</spring-boot.version> <!-- Oct 23, 2025 -->
         <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
-        <netty.version>4.2.9.Final</netty.version> <!-- Dec 15, 2025 -->
         <snakeyaml.version>2.5</snakeyaml.version> <!-- Aug 31, 2025 -->
 
-        <jsonwebtoken.version>0.13.0</jsonwebtoken.version><!-- Aug 20, 2025 -->
-
-        <playwright.version>1.56.0</playwright.version> <!-- Oct 17, 2025 -->
-        <selenium.version>4.38.0</selenium.version> <!-- Oct 25, 2025 -->
-
-        <jakarta.mail.version>2.0.2</jakarta.mail.version> <!-- Jul 29, 2025 -->
-
-        <grizzly.version>4.0.2</grizzly.version> <!-- Dec 19, 2023 -->
-        <tyrus.version>2.2.1</tyrus.version> <!-- Oct 24, 2025 -->
         <springdoc.version>2.8.14</springdoc.version> <!-- Nov 4, 2025 -->
-        <jsoniter.version>0.9.23</jsoniter.version> <!-- Jul 3, 2018 -->
 
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version> <!-- May 31, 2025 -->
         <frontend-maven-plugin.verion>1.15.4</frontend-maven-plugin.verion> <!-- Sep 26, 2025 -->
@@ -49,14 +42,6 @@
 
         <node.version>24.11.1</node.version> <!-- Nov 11, 2025 -->
         <npm.version>11.6.2</npm.version> <!-- Oct 08, 2025 -->
-
-        <dl4j.version>1.0.0-M2.1</dl4j.version> <!-- Aug 12, 2022 -->
-
-        <guava.version>33.5.0-jre</guava.version> <!-- Sep 17, 2025 -->
-        <commons-math3.version>3.6.1</commons-math3.version> <!-- Mar 17, 2016 -->
-        <commons-lang3.version>3.19.0</commons-lang3.version> <!-- Sep 24, 2025 -->
-        <commons-io.version>2.21.0</commons-io.version> <!-- Nov 07, 2025 -->
-        <commons-compress.version>1.28.0</commons-compress.version> <!-- Jul 30, 2025 -->
     </properties>
 
 
@@ -64,111 +49,32 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc.version}</version>
+                <groupId>com.traderoom</groupId>
+                <artifactId>core</artifactId>
+                <version>${app.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.traderoom</groupId>
+                <artifactId>monitoring</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.traderoom</groupId>
+                <artifactId>strategy</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
                 <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jsonwebtoken.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jsonwebtoken.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jsonwebtoken.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.microsoft.playwright</groupId>
-                <artifactId>playwright</artifactId>
-                <version>${playwright.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.seleniumhq.selenium</groupId>
-                <artifactId>selenium-java</artifactId>
-                <version>${selenium.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${jakarta.mail.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http-server</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-framework</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-client</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-grizzly-client</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.jsoniter</groupId>
-                <artifactId>jsoniter</artifactId>
-                <version>${jsoniter.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-math3</artifactId>
-                <version>${commons-math3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-compress</artifactId>
-                <version>${commons-compress.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -180,6 +86,19 @@
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
                     <version>${frontend-maven-plugin.verion}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <compilerArgs>
+                            <arg>--add-modules</arg>
+                            <arg>jdk.incubator.vector</arg>
+                        </compilerArgs>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

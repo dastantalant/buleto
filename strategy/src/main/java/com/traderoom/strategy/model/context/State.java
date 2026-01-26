@@ -6,10 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @ToString
-public class State {
+public class State implements Serializable {
     private long balance;
     private final MarketData marketData;
 

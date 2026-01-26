@@ -1,10 +1,11 @@
 package com.traderoom.strategy.base;
 
-import com.traderoom.strategy.api.IStrategy;
+import com.traderoom.strategy.IStrategy;
+import com.traderoom.strategy.enums.Tag;
 import com.traderoom.strategy.model.context.Config;
 import com.traderoom.strategy.model.context.State;
 import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.factory.AStrategy;
+import com.traderoom.strategy.api.AStrategy;
 import com.traderoom.strategy.model.Bet;
 import com.traderoom.strategy.base.strategies.HotNumbersStrategy;
 import com.traderoom.strategy.base.strategies.MeanReversionStrategy;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@AStrategy
+@AStrategy(tags = Tag.MANAGER)
 public class AdvancedManager extends BaseManager {
 
     private IStrategy currentChampion;
