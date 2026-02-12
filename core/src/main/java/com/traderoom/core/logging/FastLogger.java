@@ -33,7 +33,7 @@ public class FastLogger {
     }
 
     private static final int CAPACITY = 8192;
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     private static final String PLACEHOLDER = "{}";
     private static final int WIDTH = 35;
     private static final StackWalker WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
@@ -96,10 +96,8 @@ public class FastLogger {
         PADDING_SPACES = " ".repeat(WIDTH).getBytes(CHARSET);
         for (Level lvl : Level.values()) {
             StringBuilder sb = new StringBuilder();
-            sb.append("[");
             sb.append(lvl.name());
             if (lvl.name().length() < 5) sb.append(" ");
-            sb.append("] ");
             LEVELS[lvl.ordinal()] = sb.toString().getBytes(CHARSET);
         }
         Thread loggerThread = new Thread(FastLogger::processLogs);
@@ -164,7 +162,7 @@ public class FastLogger {
     private static void log(Level level, String pattern, Throwable throwable, Object... args) {
         Entry entry = Entry.of(level, pattern, throwable, args);
         if (!QUEUE.offer(entry)) {
-            System.err.println("[DROP] " + pattern);
+            System.err.println("DROP " + pattern);
         }
     }
 
@@ -176,11 +174,10 @@ public class FastLogger {
                     if (entry == null) {
                         continue;
                     }
-                    out.write(OPEN);
                     write(out, getFormattedTimestamp());
-                    out.write(CLOSE);
+                    out.write(SPACE);
                     out.write(LEVELS[entry.level().ordinal()]);
-                    out.write(OPEN);
+                    out.write(SPACE);
                     String location;
                     if (entry.frame() != null) {
                         String full = entry.frame().getClassName();
@@ -190,11 +187,11 @@ public class FastLogger {
                         location = "(Unknown Source)";
                     }
                     write(out, location);
-                    int padding = WIDTH - location.length();
-                    if (padding > 0) {
-                        out.write(PADDING_SPACES, 0, padding);
-                    }
-                    out.write(CLOSE);
+//                    int padding = WIDTH - location.length();
+//                    if (padding > 0) {
+//                        out.write(PADDING_SPACES, 0, padding);
+//                    }
+                    out.write(SPACE);
                     String message = formating(entry.pattern(), entry.args());
                     write(out, message);
                     if (entry.throwable() != null) {

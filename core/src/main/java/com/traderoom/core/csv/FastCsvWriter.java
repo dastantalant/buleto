@@ -1,10 +1,15 @@
 package com.traderoom.core.csv;
 
+import com.traderoom.core.io.IOFactory;
 import com.traderoom.core.io.Output;
 
 import java.io.Flushable;
 import java.io.IOException;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 
 public final class FastCsvWriter<T> implements Flushable, AutoCloseable {
@@ -23,17 +28,35 @@ public final class FastCsvWriter<T> implements Flushable, AutoCloseable {
             if (writeHeader) {
                 writeHeader(out);
             }
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+            throw new CsvWriteException(e);
         }
     }
 
-    public void write(Deque<T> items) throws Throwable {
-        for (T item : items) {
-            writeRow(item, out);
+    public static <T> void write(Class<T> type, Collection<T> data, Path path, OpenOption... option) {
+        if (data.isEmpty()) return;
+        try (Output output = IOFactory.writerOf(path, option);
+             FastCsvWriter<T> writer = new FastCsvWriter<>(type, output)) {
+            writer.write(data);
+        } catch (Throwable e) {
+            throw new CsvWriteException(e);
         }
     }
 
-    public void write(List<T> items) throws Throwable {
+    public static <T> void write(Collection<T> data, Path path, OpenOption... option) {
+        if (data.isEmpty()) return;
+        Iterator<T> it = data.iterator();
+        if (!it.hasNext()) return;
+        T first = it.next();
+        if (first == null) {
+            throw new CsvWriteException("The first element of the collection = null, it is impossible to determine the type");
+        }
+        @SuppressWarnings("unchecked")
+        Class<T> type = (Class<T>) first.getClass();
+        write(type, data, path, option);
+    }
+
+    public void write(Collection<T> items) throws Throwable {
         for (T item : items) {
             writeRow(item, out);
         }

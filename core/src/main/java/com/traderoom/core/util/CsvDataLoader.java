@@ -1,5 +1,7 @@
 package com.traderoom.core.util;
 
+import com.traderoom.core.logging.FastLogger;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,11 +14,18 @@ import java.util.stream.Stream;
 
 public class CsvDataLoader {
 
-    private CsvDataLoader() {}
-
-    public static Deque<Integer> load(String filePath) throws IOException {
-        return load(Paths.get(filePath));
+    private CsvDataLoader() {
     }
+
+    public static Deque<Integer> load(String filePath) {
+        try {
+            return load(Paths.get(filePath));
+        } catch (IOException ex) {
+            FastLogger.error(ex);
+        }
+        return new LinkedList<>();
+    }
+
 
     public static Deque<Integer> load(Path path) throws IOException {
         if (!Files.exists(path)) {

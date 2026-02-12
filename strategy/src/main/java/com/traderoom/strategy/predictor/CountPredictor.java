@@ -1,79 +1,80 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.model.SpotPrediction;
-import com.traderoom.strategy.utils.BetHelper;
+import com.traderoom.api.enums.BetType;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.*;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.Predictor;
+import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class CountPredictor implements Predictor {
-
-    private final EnumMap<Spot, Long> spotMap;
-    private final EnumMap<BetType, Long> typeMap;
-    private long count;
+    private final int windowSize;
 
     public CountPredictor() {
-        spotMap = new EnumMap<>(Spot.class);
-        typeMap = new EnumMap<>(BetType.class);
-        count = 0;
+        this(200);
     }
 
-    private double calculate(double occurrences) {
-        return count == 0 ? 0.0 : occurrences / count;
+    public CountPredictor(int windowSize) {
+        this.windowSize = windowSize;
     }
 
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
-        updateParameter(state, config);
+    public List<SpotPrediction> predictSpot(State state, Config config) {
+        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        double total = window.size();
+        if (total == 0) return List.of();
+
+        Map<Spot, Integer> counts = new EnumMap<>(Spot.class);
+        for (Spot spot : window) {
+            counts.merge(spot, 1, Integer::sum);
+        }
+
         return Spot.getAvailableList(config.rouletteType())
                 .stream()
-                .map(spot -> SpotPrediction.of(spot, calculate(spotMap.getOrDefault(spot, 0L))))
+                .map(spot -> SpotPrediction.of(spot, counts.getOrDefault(spot, 0) / total))
                 .toList();
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
-        updateParameter(state, config);
-        return BetType.getAvailableList(config.rouletteType())
-                .stream()
-                .map(type -> BetTypePrediction.of(type, calculate(typeMap.getOrDefault(type, 0L))))
+    public List<BetTypePrediction> predictType(State state, Config config) {
+        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        double total = window.size();
+        if (total == 0) return List.of();
+
+        Map<BetType, Integer> counts = new EnumMap<>(BetType.class);
+        List<BetType> availableTypes = BetType.getAvailableList(config.rouletteType());
+
+        for (Spot spot : window) {
+            for (BetType type : availableTypes) {
+                if (BetHelper.isWin(type, spot)) {
+                    counts.merge(type, 1, Integer::sum);
+                }
+            }
+        }
+
+        return availableTypes.stream()
+                .map(type -> BetTypePrediction.of(type, counts.getOrDefault(type, 0) / total))
                 .toList();
     }
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
-        updateParameter(state, config);
+    public ColorPrediction predictColor(State state, Config config) {
+        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        double total = window.size();
+        if (total == 0) return ColorPrediction.of();
 
-        double red = 0;
-        double black = 0;
-        double green = 0;
-        for (Spot spot : Spot.getAvailableList(config.rouletteType())) {
-            long spotCount = spotMap.getOrDefault(spot, 0L);
-            if (spot.isRed()) {
-                red += spotCount;
-            } else if (spot.isBlack()) {
-                black += spotCount;
-            } else if (spot.isGreen()) {
-                green += spotCount;
-            }
+        double red = 0, black = 0, green = 0;
+        for (Spot spot : window) {
+            if (spot.isRed()) red++;
+            else if (spot.isBlack()) black++;
+            else if (spot.isGreen()) green++;
         }
-        return ColorPrediction.of(calculate(red), calculate(black), calculate(green));
-    }
 
-    private void updateParameter(State state, Config config) {
-        spotMap.merge(state.getMarketData().getLastSpot(), 1L, Long::sum);
-        for (BetType type : BetType.getAvailableList(config.rouletteType())) {
-            if (BetHelper.isWin(type, state.getMarketData().getLastSpot())) {
-                typeMap.merge(type, 1L, Long::sum);
-            }
-        }
-        count++;
+        return ColorPrediction.of(red / total, black / total, green / total);
     }
-
 }

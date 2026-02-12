@@ -1,13 +1,14 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.model.SpotPrediction;
-import com.traderoom.strategy.utils.BetHelper;
+import com.traderoom.api.enums.BetType;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.BetTypePrediction;
+import com.traderoom.api.model.ColorPrediction;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.model.State;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.Predictor;
+import com.traderoom.api.utils.BetHelper;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -16,9 +17,9 @@ import java.util.Map;
 public class CountPredictor2 implements Predictor {
 
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
+    public List<SpotPrediction> predictSpot(State state, Config config) {
         Map<Spot, Long> countMap = getSpotTypeCountMap(state);
-        double totalCount = state.getMarketData().getHistory().size();
+        double totalCount = state.getMarket().getHistory().size();
         return Spot.getAvailableList(config.rouletteType())
                 .stream()
                 .map(spot -> SpotPrediction.of(spot, calculate(countMap.getOrDefault(spot, 0L), totalCount)))
@@ -26,9 +27,9 @@ public class CountPredictor2 implements Predictor {
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
+    public List<BetTypePrediction> predictType(State state, Config config) {
         EnumMap<BetType, Long> countMap = getBetTypeCountMap(state, config);
-        double totalCount = state.getMarketData().getHistory().size();
+        double totalCount = state.getMarket().getHistory().size();
         return BetType.getAvailableList(config.rouletteType())
                 .stream()
                 .map(type -> BetTypePrediction.of(type, calculate(countMap.getOrDefault(type, 0L), totalCount)))
@@ -36,7 +37,7 @@ public class CountPredictor2 implements Predictor {
     }
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
+    public ColorPrediction predictColor(State state, Config config) {
         EnumMap<Spot, Long> countMap = getSpotTypeCountMap(state);
         List<Spot> availableSpots = Spot.getAvailableList(config.rouletteType());
         if (availableSpots.isEmpty()) {
@@ -63,7 +64,7 @@ public class CountPredictor2 implements Predictor {
 
     private EnumMap<Spot, Long> getSpotTypeCountMap(State state) {
         EnumMap<Spot, Long> countMap = new EnumMap<>(Spot.class);
-        for (Spot spot : state.getMarketData().getHistory()) {
+        for (Spot spot : state.getMarket().getHistory()) {
             countMap.merge(spot, 1L, Long::sum);
         }
         return countMap;
@@ -72,7 +73,7 @@ public class CountPredictor2 implements Predictor {
     private EnumMap<BetType, Long> getBetTypeCountMap(State state, Config config) {
         EnumMap<BetType, Long> countMap = new EnumMap<>(BetType.class);
         List<BetType> availableTypes = BetType.getAvailableList(config.rouletteType());
-        for (Spot spot : state.getMarketData().getHistory()) {
+        for (Spot spot : state.getMarket().getHistory()) {
             for (BetType betType : availableTypes) {
                 if (BetHelper.isWin(betType, spot)) {
                     countMap.merge(betType, 1L, Long::sum);

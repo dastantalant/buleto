@@ -5,9 +5,9 @@ import java.util.List;
 
 final class CsvClassMeta {
     final List<CsvFieldMeta> fields;
-    final MethodHandle constructor; // Для Record - канонический, для POJO - no-args
+    final MethodHandle constructor;
     final boolean isRecord;
-    final int recordComponentCount; // Количество аргументов конструктора рекорда
+    final int recordComponentCount;
 
     CsvClassMeta(List<CsvFieldMeta> fields, MethodHandle constructor, boolean isRecord, int recordComponentCount) {
         this.fields = fields;

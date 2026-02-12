@@ -1,15 +1,17 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.SpotPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import lombok.Setter;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.BetTypePrediction;
+import com.traderoom.api.model.ColorPrediction;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.model.State;
+import com.traderoom.api.Predictor;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Предиктор-обертка, реализующий логику "Инсайда" или жестких ограничений.
@@ -24,14 +26,12 @@ public class RestrictedPredictor implements Predictor {
     /**
      * Набор запрещенных чисел (Blacklist). Если не пуст, эти числа исключаются из прогноза.
      */
-    @Setter
     private Set<Spot> bannedSpots = new HashSet<>();
 
     /**
      * Набор разрешенных чисел (Whitelist). Если не пуст, прогноз строится ТОЛЬКО из этих чисел.
      * Имеет приоритет над bannedSpots (если whitelist задан, banned игнорируется).
      */
-    @Setter
     private Set<Spot> allowedSpots = new HashSet<>();
 
     public RestrictedPredictor() {
@@ -47,8 +47,8 @@ public class RestrictedPredictor implements Predictor {
      * Возвращает прогнозы, отфильтрованные согласно спискам запретов/разрешений.
      */
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
-        List<SpotPrediction> rawPredictions = delegate.getNextSpot(state, config);
+    public List<SpotPrediction> predictSpot(State state, Config config) {
+        List<SpotPrediction> rawPredictions = delegate.predictSpot(state, config);
 
         if (rawPredictions.isEmpty()) return List.of();
 
@@ -58,20 +58,21 @@ public class RestrictedPredictor implements Predictor {
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
+    public List<BetTypePrediction> predictType(State state, Config config) {
         // Фильтрация ставок на типы (Red/Black и т.д.) сложнее,
         // так как нужно проверять, не перекрывают ли они запрещенные числа.
         // Для простоты возвращаем как есть, либо можно реализовать логику исключения.
-        return delegate.getNextType(state, config);
+        return delegate.predictType(state, config);
     }
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
-        return delegate.getNextColor(state, config);
+    public ColorPrediction predictColor(State state, Config config) {
+        return delegate.predictColor(state, config);
     }
 
     /**
      * Проверяет, допустимо ли число для ставки.
+     *
      * @param spot проверяемое число
      * @return true, если число можно играть
      */
@@ -107,5 +108,13 @@ public class RestrictedPredictor implements Predictor {
     public void clearRestrictions() {
         this.bannedSpots.clear();
         this.allowedSpots.clear();
+    }
+
+    public void setBannedSpots(Set<Spot> bannedSpots) {
+        this.bannedSpots = bannedSpots;
+    }
+
+    public void setAllowedSpots(Set<Spot> allowedSpots) {
+        this.allowedSpots = allowedSpots;
     }
 }

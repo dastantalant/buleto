@@ -1,14 +1,15 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.RouletteType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.model.SpotPrediction;
-import com.traderoom.strategy.utils.BetHelper;
+import com.traderoom.api.enums.BetType;
+import com.traderoom.api.enums.RouletteType;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.BetTypePrediction;
+import com.traderoom.api.model.ColorPrediction;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.model.State;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.Predictor;
+import com.traderoom.api.utils.BetHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -49,15 +50,15 @@ public class ImprovedMarkovPredictor implements Predictor {
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
-        if (state.getMarketData().getHistory().size() < size) {
+    public List<BetTypePrediction> predictType(State state, Config config) {
+        if (state.getMarket().getHistory().size() < size) {
             return List.of();
         }
 
-        List<Spot> history = state.getMarketData().getHistory();
+        List<Spot> history = state.getMarket().getHistory();
         updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
 
-        List<BetType> betTypes = findTypes(state.getMarketData().getLastSpot(), config.rouletteType());
+        List<BetType> betTypes = findTypes(state.getMarket().getLastSpot(), config.rouletteType());
 
         Map<BetType, Long> collect = betTypes.stream()
                 .flatMap(lastType -> types.getOrDefault(lastType, Map.of()).entrySet().stream())
@@ -79,15 +80,15 @@ public class ImprovedMarkovPredictor implements Predictor {
     }
 
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
-        if (state.getMarketData().getHistory().size() < size) {
+    public List<SpotPrediction> predictSpot(State state, Config config) {
+        if (state.getMarket().getHistory().size() < size) {
             return List.of();
         }
 
-        List<Spot> history = state.getMarketData().getHistory();
+        List<Spot> history = state.getMarket().getHistory();
         updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
 
-        Map<Spot, Long> map = spots.getOrDefault(state.getMarketData().getLastSpot(), Map.of());
+        Map<Spot, Long> map = spots.getOrDefault(state.getMarket().getLastSpot(), Map.of());
 
         if (map.isEmpty()) {
             return List.of();
@@ -106,8 +107,8 @@ public class ImprovedMarkovPredictor implements Predictor {
 
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
-        List<SpotPrediction> list = getNextSpot(state, config);
+    public ColorPrediction predictColor(State state, Config config) {
+        List<SpotPrediction> list = predictSpot(state, config);
 
         if (list.isEmpty()) {
             return ColorPrediction.of();

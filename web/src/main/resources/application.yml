@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: traderoom
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/buleto #80.90.189.19
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
+  security:
+    user:
+      name: das
+      password: das
+      roles: ROOT
+#jwt:
+#  secret: 2585e5db456ca0e976e0ff20a213e1924e434109cb7973b461e075240ed49cf92ecfd60b5b9dd47258a979b679949d4f8a01f062d795ebd7043e894516d4c4f4
+#  access-token-expiration: 86400000 # day
+##  access-token-expiration: 3600000 # 1h
+#  refresh-token-expiration: 2592000000 # 30d
+
+server:
+  port: 9999
+
+application:
+  security:
+    jwt:
+      secret-key: 2585e5db456ca0e976e0ff20a213e1924e434109cb7973b461e075240ed49cf92ecfd60b5b9dd47258a979b679949d4f8a01f062d795ebd7043e894516d4c4f4
+      expiration: 900000 #  15 min in ms
+      cookie-name: jwt-cookie
+      refresh-token:
+        expiration: 2592000000 # 30 days in ms
+        cookie-name: refresh-jwt-cookie
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/doc
+  swagger-ui:
+    enabled: true
+    path: /api/ui

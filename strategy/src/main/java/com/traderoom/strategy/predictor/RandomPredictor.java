@@ -1,51 +1,50 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.model.SpotPrediction;
+import com.traderoom.api.enums.BetType;
+import com.traderoom.api.enums.Constants;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.BetTypePrediction;
+import com.traderoom.api.model.ColorPrediction;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.model.State;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.Predictor;
 
 import java.util.List;
-import java.util.Random;
 
 public class RandomPredictor implements Predictor {
 
     private final double probability;
-    private final Random random;
 
     public RandomPredictor() {
-        random = new Random();
         probability = 1.0;
     }
 
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
+    public List<SpotPrediction> predictSpot(State state, Config config) {
         List<Spot> list = Spot.getAvailableList(config.rouletteType());
         if (list.isEmpty()) {
             return List.of();
         }
 
         return normalize(list.stream()
-                .map(spot -> SpotPrediction.of(spot, random.nextDouble()))
+                .map(spot -> SpotPrediction.of(spot, Constants.RANDOM.nextDouble()))
                 .toList());
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
+    public List<BetTypePrediction> predictType(State state, Config config) {
         List<BetType> list = BetType.getAvailableList(config.rouletteType());
         if (list.isEmpty()) {
             return List.of();
         }
         return normalizeBetType(list.stream()
-                .map(betType -> BetTypePrediction.of(betType, random.nextDouble()))
+                .map(betType -> BetTypePrediction.of(betType, Constants.RANDOM.nextDouble()))
                 .toList());
     }
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
+    public ColorPrediction predictColor(State state, Config config) {
         return ColorPrediction.of(probability / 3);
     }
 

@@ -1,11 +1,12 @@
 package com.traderoom.core.csv;
 
 import com.traderoom.core.converter.IdentityConverter;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public final class CsvReader<T> {
@@ -16,13 +17,18 @@ public final class CsvReader<T> {
 
     public CsvReader(Class<T> type) {
         CsvFile cfg = type.getAnnotation(CsvFile.class);
-        this.sep = (cfg != null ? cfg.separator() : Separator.COMMA).symbol();
-        this.hasHeader = cfg == null || cfg.header();
-        this.classMeta = MetadataCache.get(type);
+        sep = (cfg != null ? cfg.separator() : Separator.COMMA).symbol();
+        hasHeader = cfg == null || cfg.header();
+        classMeta = MetadataCache.get(type);
+    }
+
+    public static <T> List<T> read(Class<T> type, InputStream in) {
+        var reader = new CsvReader<>(type);
+        return reader.read(in);
     }
 
     public List<T> read(InputStream in) {
-        List<T> result = new ArrayList<>();
+        List<T> result = new LinkedList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             String line;
             boolean firstLine = true;
@@ -46,26 +52,16 @@ public final class CsvReader<T> {
         List<CsvFieldMeta> fields = classMeta.fields;
 
         if (classMeta.isRecord) {
-            // === ЛОГИКА ДЛЯ RECORD ===
-            // Создаем массив аргументов для конструктора
-            // Он инициализируется null/0/false по умолчанию
             Object[] args = new Object[classMeta.recordComponentCount];
-
             for (int i = 0; i < fields.size() && i < tokens.size(); i++) {
                 CsvFieldMeta meta = fields.get(i);
-                // Заполняем только если поле привязано к конструктору (для рекордов всегда так)
                 if (meta.constructorParamIndex >= 0) {
                     args[meta.constructorParamIndex] = convert(tokens.get(i), meta);
                 }
             }
-            // Вызываем канонический конструктор
             return (T) classMeta.constructor.invokeWithArguments(args);
-
         } else {
-            // === ЛОГИКА ДЛЯ POJO ===
-            // Создаем объект через пустой конструктор
             T instance = (T) classMeta.constructor.invoke();
-
             for (int i = 0; i < fields.size() && i < tokens.size(); i++) {
                 CsvFieldMeta meta = fields.get(i);
                 Object val = convert(tokens.get(i), meta);
@@ -82,17 +78,13 @@ public final class CsvReader<T> {
         return PrimitiveParser.parse(token, meta.type);
     }
 
-    // Простой парсер строки с учетом кавычек
     private List<String> splitLine(String line) {
-        List<String> tokens = new ArrayList<>();
+        List<String> tokens = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
         boolean inQuotes = false;
-
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-
             if (c == '"') {
-                // Проверка на экранированную кавычку ""
                 if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
                     sb.append('"');
                     i++;

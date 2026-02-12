@@ -8,8 +8,8 @@ final class CsvFieldMeta {
     final int order;
     final Class<?> type;
     final MethodHandle getter;
-    final MethodHandle setter;       // null для Record
-    final int constructorParamIndex; // -1 для POJO, 0..N для Record
+    final MethodHandle setter;
+    final int constructorParamIndex;
     final Converter<Object, Object> converter;
 
     CsvFieldMeta(

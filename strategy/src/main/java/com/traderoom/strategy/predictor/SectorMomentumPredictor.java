@@ -1,16 +1,13 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.RouletteType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.SpotPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
+import com.traderoom.api.enums.RouletteType;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.model.State;
+import com.traderoom.api.Predictor;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Предиктор "Импульса Сектора" (или Почерка Дилера).
@@ -30,8 +27,8 @@ public class SectorMomentumPredictor implements Predictor {
     }
 
     @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
-        List<Spot> history = state.getMarketData().getHistory();
+    public List<SpotPrediction> predictSpot(State state, Config config) {
+        List<Spot> history = state.getMarket().getHistory();
         if (history.size() < 2) return List.of();
 
         RouletteType type = config.rouletteType();
@@ -71,7 +68,7 @@ public class SectorMomentumPredictor implements Predictor {
                 .orElse(0);
 
         // 3. Проецируем от ПОСЛЕДНЕГО выпавшего числа
-        Spot lastSpot = state.getMarketData().getLastSpot();
+        Spot lastSpot = state.getMarket().getLastSpot();
         int lastPos = lastSpot.getWheelPosition(type);
 
         // Целевой центр сектора
@@ -97,13 +94,4 @@ public class SectorMomentumPredictor implements Predictor {
                 .toList();
     }
 
-    @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
-        return List.of();
-    }
-
-    @Override
-    public ColorPrediction getNextColor(State state, Config config) {
-        return ColorPrediction.of();
-    }
 }

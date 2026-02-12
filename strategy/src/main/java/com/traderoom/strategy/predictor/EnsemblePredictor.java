@@ -1,12 +1,13 @@
 package com.traderoom.strategy.predictor;
 
-import com.traderoom.strategy.enums.BetType;
-import com.traderoom.strategy.enums.Spot;
-import com.traderoom.strategy.model.BetTypePrediction;
-import com.traderoom.strategy.model.ColorPrediction;
-import com.traderoom.strategy.model.context.Config;
-import com.traderoom.strategy.model.context.State;
-import com.traderoom.strategy.model.SpotPrediction;
+import com.traderoom.api.enums.BetType;
+import com.traderoom.api.enums.Spot;
+import com.traderoom.api.model.BetTypePrediction;
+import com.traderoom.api.model.ColorPrediction;
+import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.model.State;
+import com.traderoom.api.model.config.Config;
+import com.traderoom.api.Predictor;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -19,87 +20,98 @@ public class EnsemblePredictor implements Predictor {
         this.predictors = List.copyOf(predictors);
     }
 
-    public static EnsemblePredictor createDefaultEnsemble() {
+    /**
+     * Создает ансамбль, где все предикторы настроены на одинаковое скользящее окно.
+     * @param windowSize размер окна истории (например, 300 или 500)
+     */
+    public static EnsemblePredictor createDefaultEnsemble(int windowSize) {
         return new EnsemblePredictor(List.of(
-                new EfficientCountPredictor(),
-                new MultiOrderMarkovPredictor(),
-                new PatternPredictor()
+                new EfficientCountPredictor(windowSize),
+                new MultiOrderMarkovPredictor(windowSize),
+                new PatternPredictor(windowSize),
+                new SlidingWindowFreqPredictor(windowSize)
         ));
     }
 
-    @Override
-    public List<SpotPrediction> getNextSpot(State state, Config config) {
-        EnumMap<Spot, Double> enumMap = new EnumMap<>(Spot.class);
-        int active = 0;
-
-        for (Predictor predictor : predictors) {
-            List<SpotPrediction> predictions = predictor.getNextSpot(state, config);
-            if (!predictions.isEmpty()) {
-                active++;
-                predictions.forEach(sp -> enumMap.merge(sp.spot(), sp.probability(), Double::sum));
-            }
-        }
-
-        if (active == 0 || enumMap.isEmpty()) {
-            return List.of();
-        }
-
-        final int fnActive = active;
-        List<SpotPrediction> result = enumMap.entrySet()
-                .stream()
-                .map(entry -> SpotPrediction.of(entry.getKey(), entry.getValue() / fnActive))
-                .toList();
-
-        final double sum = result.stream()
-                .mapToDouble(SpotPrediction::probability)
-                .sum();
-        return (sum > 0) ? result.stream()
-                .map(item -> SpotPrediction.of(item.spot(), item.probability() / sum))
-                .toList()
-                : List.of();
+    // Перегрузка для совместимости
+    public static EnsemblePredictor createDefaultEnsemble() {
+        return createDefaultEnsemble(500);
     }
 
     @Override
-    public List<BetTypePrediction> getNextType(State state, Config config) {
+    public List<SpotPrediction> predictSpot(State state, Config config) {
+        EnumMap<Spot, Double> aggregatedProbabilities = new EnumMap<>(Spot.class);
+        int activePredictors = 0;
+
+        for (Predictor predictor : predictors) {
+            List<SpotPrediction> predictions = predictor.predictSpot(state, config);
+
+            // Если предиктор вернул пустой список (недостаточно данных), пропускаем его
+            if (!predictions.isEmpty()) {
+                activePredictors++;
+                for (SpotPrediction sp : predictions) {
+                    aggregatedProbabilities.merge(sp.spot(), sp.probability(), Double::sum);
+                }
+            }
+        }
+
+        if (activePredictors == 0 || aggregatedProbabilities.isEmpty()) {
+            return List.of();
+        }
+
+        final int count = activePredictors;
+
+        // 1. Усредняем вероятности (сумма / количество активных предикторов)
+        // 2. Нормализуем, чтобы сумма всех вероятностей была равна 1.0
+        double totalSum = aggregatedProbabilities.values().stream().mapToDouble(v -> v).sum();
+
+        if (totalSum == 0) return List.of();
+
+        return aggregatedProbabilities.entrySet().stream()
+                .map(entry -> {
+                    // (Value / count) / (totalSum / count) = Value / totalSum
+                    // Упрощаем математику для нормализации
+                    return SpotPrediction.of(entry.getKey(), entry.getValue() / totalSum);
+                })
+                .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability())) // Сортировка DESC
+                .toList();
+    }
+
+    @Override
+    public List<BetTypePrediction> predictType(State state, Config config) {
+        // Логика аналогична predictSpot
         EnumMap<BetType, Double> enumMap = new EnumMap<>(BetType.class);
         int active = 0;
+
         for (Predictor predictor : predictors) {
-            List<BetTypePrediction> list = predictor.getNextType(state, config);
+            List<BetTypePrediction> list = predictor.predictType(state, config);
             if (!list.isEmpty()) {
                 active++;
                 list.forEach(btp -> enumMap.merge(btp.type(), btp.probability(), Double::sum));
             }
         }
 
-        if (active == 0 || enumMap.isEmpty()) {
-            return List.of();
-        }
+        if (active == 0 || enumMap.isEmpty()) return List.of();
 
-        final int fnActive = active;
-        List<BetTypePrediction> result = enumMap.entrySet().stream()
-                .map(entry -> BetTypePrediction.of(entry.getKey(), entry.getValue() / fnActive))
+        double totalSum = enumMap.values().stream().mapToDouble(v -> v).sum();
+        if (totalSum == 0) return List.of();
+
+        return enumMap.entrySet().stream()
+                .map(entry -> BetTypePrediction.of(entry.getKey(), entry.getValue() / totalSum))
+                .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability()))
                 .toList();
-
-        final double sum = result.stream()
-                .mapToDouble(BetTypePrediction::probability)
-                .sum();
-        return (0 < sum) ? result.stream()
-                .map(item -> BetTypePrediction.of(item.type(), item.probability() / sum))
-                .toList()
-                : List.of();
-
     }
 
     @Override
-    public ColorPrediction getNextColor(State state, Config config) {
-        double red = 0L;
-        double black = 0L;
-        double green = 0L;
+    public ColorPrediction predictColor(State state, Config config) {
+        double red = 0;
+        double black = 0;
+        double green = 0;
         int active = 0;
 
         for (Predictor predictor : predictors) {
-            ColorPrediction color = predictor.getNextColor(state, config);
-            if (color != null && (color.red() > 0 || color.black() > 0 || color.green() > 0)) {
+            ColorPrediction color = predictor.predictColor(state, config);
+            if (color != null) {
                 active++;
                 red += color.red();
                 black += color.black();
@@ -107,10 +119,7 @@ public class EnsemblePredictor implements Predictor {
             }
         }
 
-        if (active == 0) {
-            return ColorPrediction.of();
-        }
-
+        if (active == 0) return ColorPrediction.of();
         return ColorPrediction.of(red / active, black / active, green / active);
     }
 }
