@@ -59,7 +59,7 @@ public class CustomStrategyTest {
     }
 
     static Config config() {
-        return ConfigMapper.toRaw(RawConfigModel.builder()
+        return ConfigMapper.INSTANCE.toConfig(RawConfigModel.builder()
                         .name("Test")
                         .realBalance(balance * 10)
                         .startBalance(balance)

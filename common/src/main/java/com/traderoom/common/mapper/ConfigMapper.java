@@ -1,15 +1,22 @@
 package com.traderoom.common.mapper;
 
+import com.traderoom.api.model.config.RawConfig;
 import com.traderoom.common.entity.ConfigEntity;
 import com.traderoom.common.model.RawConfigModel;
 import com.traderoom.common.model.request.ConfigRequest;
-import com.traderoom.api.model.config.RawConfig;
+import org.mapstruct.IterableMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
 
-import java.util.LinkedList;
+import java.util.List;
 
-public class ConfigMapper {
+@Mapper
+public interface ConfigMapper {
 
-    public static ConfigEntity map(ConfigRequest request) {
+    ConfigMapper INSTANCE = Mappers.getMapper(ConfigMapper.class);
+
+    default ConfigEntity toEntity(ConfigRequest request) {
         return ConfigEntity.builder()
                 .name(request.getPayload().getName())
                 .payload(request.getPayload())
@@ -17,42 +24,15 @@ public class ConfigMapper {
                 .build();
     }
 
-    public static RawConfig toRaw(RawConfigModel payload) {
-        return RawConfig.builder()
-                .name(payload.getName())
-                .tableLimit(payload.getTableLimit())
-                .type(payload.getType())
-                .startBalance(payload.getStartBalance())
-                .realBalance(payload.getRealBalance())
-                .minBet(payload.getMinBet())
-                .maxBet(payload.getMaxBet())
-                .tableLimit(payload.getTableLimit())
+    @Named("toConfig")
+    RawConfig toConfig(RawConfigModel model);
 
-                .stopLossPercentageStop(payload.getStopLossPercentageStop())
-                .takeProfitPercentageStop(payload.getTakeProfitPercentageStop())
-                .trailingStopPercentageStop(payload.getTrailingStopPercentageStop())
-                .maxDrawdownPercentageStop(payload.getMaxDrawdownPercentageStop())
-                .maxWinStreakStop(payload.getMaxWinStreakStop())
-                .maxLossStreakStop(payload.getMaxLossStreakStop())
+    @IterableMapping(qualifiedByName = "toConfig")
+    List<RawConfig> toConfig(List<RawConfigModel> models);
 
-                .initialHistory(new LinkedList<>())
+    @Named("toModel")
+    RawConfigModel toModel(RawConfig config);
 
-                .maxRoundsStop(payload.getMaxRoundsStop())
-                .stagnationWindowStop(payload.getStagnationWindowStop())
-                .minWinRateThresholdStop(payload.getMinWinRateThresholdStop())
-                .minRoundsForWinRateStop(payload.getMinRoundsForWinRateStop())
-
-                .dangerZoneThresholdRisk(payload.getDangerZoneThresholdRisk())
-                .profitZoneThresholdRisk(payload.getProfitZoneThresholdRisk())
-                .normalZoneBetCapRisk(payload.getNormalZoneBetCapRisk())
-                .penaltyBoxDurationRisk(payload.getPenaltyBoxDurationRisk())
-
-                .maxBetBalancePercentageLimit(payload.getMaxBetBalancePercentageLimit())
-                .peakProtectDrawdownStepLimit(payload.getPeakProtectDrawdownStepLimit())
-                .peakProtectReductionFactorLimit(payload.getPeakProtectReductionFactorLimit())
-                .minWinRateThresholdLimit(payload.getMinWinRateThresholdLimit())
-                .minWinRateRoundsLimit(payload.getMinWinRateRoundsLimit())
-                .floatingMinBetPercentLimit(payload.getFloatingMinBetPercentLimit())
-                .build();
-    }
+    @IterableMapping(qualifiedByName = "toModel")
+    List<RawConfigModel> toModel(List<RawConfig> configs);
 }

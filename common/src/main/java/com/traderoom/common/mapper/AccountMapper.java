@@ -6,12 +6,12 @@ import com.traderoom.common.model.account.Credit;
 import com.traderoom.common.model.buleto.response.AccountResponse;
 import com.traderoom.common.model.request.AccountRequest;
 import com.traderoom.common.util.TokenHelper;
+import org.mapstruct.Mapper;
 
-public class AccountMapper {
-    private AccountMapper() {
-    }
+@Mapper
+public interface AccountMapper {
 
-    public static Account toAccount(Credit credit, AccountResponse response) {
+    static Account toAccount(Credit credit, AccountResponse response) {
         var token = TokenHelper.extract(response.getToken());
         return Account.builder()
                 .accountNumber(response.getAccountNumber())
@@ -24,11 +24,11 @@ public class AccountMapper {
                 .build();
     }
 
-    public static Credit toCredit(AccountRequest request) {
+    static Credit toCredit(AccountRequest request) {
         return new Credit(request.getUsername(), request.getPassword());
     }
 
-    public static AccountEntity toEntity(AccountRequest request) {
+    static AccountEntity toEntity(AccountRequest request) {
         return new AccountEntity(request.getUsername(), request.getPassword());
     }
 }

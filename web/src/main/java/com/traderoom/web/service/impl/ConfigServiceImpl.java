@@ -31,7 +31,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     public ConfigEntity save(ConfigRequest request) {
-        return repository.save(ConfigMapper.map(request));
+        return repository.save(ConfigMapper.INSTANCE.toEntity(request));
     }
 
     @Override

@@ -80,7 +80,7 @@ public class CustomStrategyTest {
 
     static Config config() {
         int balance = 1000;
-        return ConfigMapper.toRaw(RawConfigModel.builder()
+        return ConfigMapper.INSTANCE.toConfig(RawConfigModel.builder()
                         .name("Test")
                         .realBalance((long) (balance * 10))
                         .startBalance((long) balance)

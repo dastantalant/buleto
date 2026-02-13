@@ -30,7 +30,8 @@ public class RawConfigModel {
             example = "AMERICAN",
             requiredMode = Schema.RequiredMode.REQUIRED,
             allowableValues = {"AMERICAN"})
-    private final RouletteType type = RouletteType.AMERICAN;
+    @Builder.Default
+    private RouletteType type = RouletteType.AMERICAN;
 
     @Schema(description = "Стартовый баланс для игры",
             example = "1000",

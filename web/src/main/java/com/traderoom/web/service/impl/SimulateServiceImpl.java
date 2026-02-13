@@ -29,7 +29,7 @@ public class SimulateServiceImpl implements SimulateService {
     public Deque<WebSimulateResult> simulate(long configId, long max) {
         var configEntity = configService.findById(configId);
         var list = extractClass(configEntity);
-        var rawConfig = ConfigMapper.toRaw(configEntity.getPayload());
+        var rawConfig = ConfigMapper.INSTANCE.toConfig(configEntity.getPayload());
         return StrategyFactory.webSimulatorManager(list, rawConfig, max).run();
     }
 
@@ -38,7 +38,7 @@ public class SimulateServiceImpl implements SimulateService {
         var deque = roundService.findCellByIdBetweenOrderByIdAsc(from, to);
         var configEntity = configService.findById(configId);
         var list = extractClass(configEntity);
-        var rawConfig = ConfigMapper.toRaw(configEntity.getPayload());
+        var rawConfig = ConfigMapper.INSTANCE.toConfig(configEntity.getPayload());
         return StrategyFactory.webSimulatorManager(list, rawConfig, deque).run();
     }
 
