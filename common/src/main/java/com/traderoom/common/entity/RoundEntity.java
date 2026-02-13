@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true, fluent = true)
 public class RoundEntity {
     @Id
     @Column(name = "id")
@@ -29,4 +31,10 @@ public class RoundEntity {
     private Instant startTime;
     private Instant victoryTime;
     private int factor;
+    private int beginValue;
+    private int targetValue;
+    private int startValue;
+    private Instant endTime;
+    private Instant closedTime;
+    private Instant targetTime;
 }

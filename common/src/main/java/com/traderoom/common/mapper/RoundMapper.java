@@ -5,14 +5,24 @@ import com.traderoom.common.model.RoundModel;
 
 import java.util.List;
 
-public class RoundMapper {
+public final class RoundMapper {
+    private RoundMapper() {
+    }
 
     public static RoundModel toModel(RoundEntity entity) {
-        return new RoundModel(entity.getId(),
-                entity.getCell(),
-                entity.getStartTime(),
-                entity.getVictoryTime(),
-                entity.getFactor());
+        return RoundModel.builder()
+                .roundId(entity.id())
+                .cell(entity.cell())
+                .startTime(entity.startTime())
+                .victoryTime(entity.victoryTime())
+                .factor(entity.factor())
+                .beginValue(entity.beginValue())
+                .targetValue(entity.targetValue())
+                .startValue(entity.startValue())
+                .endTime(entity.endTime())
+                .closedTime(entity.closedTime())
+                .targetTime(entity.targetTime())
+                .build();
     }
 
     public static List<RoundModel> toModel(List<RoundEntity> list) {
@@ -20,11 +30,19 @@ public class RoundMapper {
     }
 
     public static RoundEntity toEntity(RoundModel model) {
-        return new RoundEntity(model.getRoundId(),
-                model.getCell(),
-                model.getStartTime(),
-                model.getVictoryTime(),
-                model.getFactor());
+        return RoundEntity.builder()
+                .id(model.roundId())
+                .cell(model.cell())
+                .startTime(model.startTime())
+                .victoryTime(model.victoryTime())
+                .factor(model.factor())
+                .beginValue(model.beginValue())
+                .targetValue(model.targetValue())
+                .startValue(model.startValue())
+                .endTime(model.endTime())
+                .closedTime(model.closedTime())
+                .targetTime(model.targetTime())
+                .build();
     }
 
     public static List<RoundEntity> toEntity(List<RoundModel> list) {

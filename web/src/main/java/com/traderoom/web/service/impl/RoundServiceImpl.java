@@ -3,24 +3,27 @@ package com.traderoom.web.service.impl;
 import com.traderoom.common.mapper.RoundMapper;
 import com.traderoom.common.model.RoundModel;
 import com.traderoom.common.model.RoundShort;
-import com.traderoom.web.repository.RoundJdbcRepository;
+import com.traderoom.common.service.RoundDAO;
 import com.traderoom.web.repository.RoundRepository;
 import com.traderoom.web.service.RoundService;
+import com.zaxxer.hikari.HikariDataSource;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Deque;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class RoundServiceImpl implements RoundService {
     private final RoundRepository repository;
-    private final RoundJdbcRepository jdbcRepository;
+    private final RoundDAO dao;
+
+    public RoundServiceImpl(RoundRepository repository, HikariDataSource dataSource) {
+        this.repository = repository;
+        dao = new RoundDAO(dataSource);
+    }
 
     @Override
     public Page<RoundModel> findAll(Pageable pageable) {
@@ -30,19 +33,19 @@ public class RoundServiceImpl implements RoundService {
 
     @Override
     public List<RoundModel> save(List<RoundModel> request) {
-        jdbcRepository.saveAllModel(request);
+        dao.saveAllModels(request);
         return request;
     }
 
     @Override
     public RoundModel update(long id, RoundModel request) {
-        jdbcRepository.saveModel(request);
+        dao.save(request);
         return request;
     }
 
     @Override
     public List<RoundModel> update(List<RoundModel> request) {
-        jdbcRepository.saveAllModel(request);
+        dao.saveAllModels(request);
         return request;
     }
 

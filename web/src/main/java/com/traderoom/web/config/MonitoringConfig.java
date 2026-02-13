@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Bean;
 public class MonitoringConfig {
     @Bean(destroyMethod = "stop")
     public Client startMonitoring() {
-        return Client.of("wss://buleto.com/ws", new SaveSubscriber()).start();
+        return Client.base("wss://buleto.com/ws", new SaveSubscriber()).start();
     }
 }

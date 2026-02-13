@@ -8,6 +8,9 @@ import com.traderoom.common.model.request.AccountRequest;
 import com.traderoom.common.util.TokenHelper;
 
 public class AccountMapper {
+    private AccountMapper() {
+    }
+
     public static Account toAccount(Credit credit, AccountResponse response) {
         var token = TokenHelper.extract(response.getToken());
         return Account.builder()

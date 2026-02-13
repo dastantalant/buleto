@@ -7,13 +7,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.time.Instant;
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true, fluent = true)
 public class RoundModel {
     @JsonProperty("id")
     private long roundId;
@@ -23,44 +26,16 @@ public class RoundModel {
     @JsonProperty("victory_time")
     private Instant victoryTime;
     private int factor;
-
-    public long roundId() {
-        return roundId;
-    }
-
-    public void roundId(long roundId) {
-        this.roundId = roundId;
-    }
-
-    public int cell() {
-        return cell;
-    }
-
-    public void cell(int cell) {
-        this.cell = cell;
-    }
-
-    public Instant startTime() {
-        return startTime;
-    }
-
-    public void startTime(Instant startTime) {
-        this.startTime = startTime;
-    }
-
-    public Instant victoryTime() {
-        return victoryTime;
-    }
-
-    public void victoryTime(Instant victoryTime) {
-        this.victoryTime = victoryTime;
-    }
-
-    public int factor() {
-        return factor;
-    }
-
-    public void factor(int factor) {
-        this.factor = factor;
-    }
+    @JsonProperty("begin_value")
+    private int beginValue;
+    @JsonProperty("target_value")
+    private int targetValue;
+    @JsonProperty("start_value")
+    private int startValue;
+    @JsonProperty("end_time")
+    private Instant endTime;
+    @JsonProperty("closed_time")
+    private Instant closedTime;
+    @JsonProperty("target_time")
+    private Instant targetTime;
 }

@@ -37,7 +37,13 @@ public class CsvService implements SaveService {
                     .append(round.cell()).append(',')
                     .append(round.factor()).append(',')
                     .append(round.startTime()).append(',')
-                    .append(round.victoryTime())
+                    .append(round.victoryTime()).append(',')
+                    .append(round.beginValue()).append(',')
+                    .append(round.targetValue()).append(',')
+                    .append(round.startValue()).append(',')
+                    .append(round.endTime()).append(',')
+                    .append(round.closedTime()).append(',')
+                    .append(round.targetTime()).append(',')
                     .newLine();
             writer.flush();
         } catch (IOException e) {
@@ -61,7 +67,7 @@ public class CsvService implements SaveService {
         writer = new FastTextWriter(new FileOutputStream(file, true));
         currentDateStr = dateStr;
         if (isNewFile) {
-            writer.append("id,cell,factor,start_time,victory_time").newLine();
+            writer.append("id,cell,factor,start_time,victory_time,begin_value,target_value,start_value,end_time,closed_time,target_time").newLine();
             writer.flush();
         }
         FastLogger.info("Rotated CSV file to: " + file.getName());

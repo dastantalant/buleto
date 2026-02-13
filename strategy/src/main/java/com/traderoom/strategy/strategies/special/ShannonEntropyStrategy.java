@@ -1,14 +1,14 @@
 package com.traderoom.strategy.strategies.special;
 
 import com.traderoom.api.AbstractStrategy;
-import com.traderoom.api.enums.Spot;
 import com.traderoom.api.annotation.Strategy;
 import com.traderoom.api.annotation.Tag;
+import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class ShannonEntropyStrategy extends AbstractStrategy {
     }
 
     private double calculateEntropy(List<Spot> spots) {
-        Map<Spot, Integer> freq = new HashMap<>();
+        Map<Spot, Integer> freq = new EnumMap<>(Spot.class);
         for (Spot s : spots) freq.merge(s, 1, Integer::sum);
 
         double entropy = 0.0;
@@ -64,12 +64,11 @@ public class ShannonEntropyStrategy extends AbstractStrategy {
     }
 
     private List<Bet> playHotNumbers(List<Spot> window) {
-        // В режиме низкой энтропии ставим на то, что чаще всего падало в окне
-        Map<Spot, Integer> freq = new HashMap<>();
+        Map<Spot, Integer> freq = new EnumMap<>(Spot.class);
         window.forEach(s -> freq.merge(s, 1, Integer::sum));
 
         return freq.entrySet().stream()
-                .filter(e -> e.getValue() >= 2) // Только те, что повторялись
+                .filter(e -> e.getValue() >= 2)
                 .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
                 .limit(3)
                 .map(e -> Bet.of(BetHelper.getStraightUp(e.getKey()), getMinBet()))

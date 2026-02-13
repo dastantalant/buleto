@@ -28,7 +28,7 @@ public interface Publisher extends Closeable {
     }
 
     class Base implements Publisher {
-        private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        private final ExecutorService executor = Executors.newCachedThreadPool();
         private final Set<Subscriber> subscribers = new CopyOnWriteArraySet<>();
         private volatile long lastSavedRoundId = -1;
 

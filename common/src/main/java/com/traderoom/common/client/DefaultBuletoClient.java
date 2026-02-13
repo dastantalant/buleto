@@ -10,7 +10,6 @@ import com.traderoom.common.exception.AuthenticationException;
 import com.traderoom.common.exception.HttpRequestException;
 import com.traderoom.common.util.TokenHelper;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -42,7 +41,7 @@ public class DefaultBuletoClient implements BuletoClient, AutoCloseable {
             var send = client.send(request, HttpResponse.BodyHandlers.ofString());
             var response = mapper.readValue(send.body(), AccountResponse.class);
             return AccountMapper.toAccount(credit, response);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             throw new AuthenticationException(e);
         }
     }
@@ -74,7 +73,7 @@ public class DefaultBuletoClient implements BuletoClient, AutoCloseable {
             var send = client.send(request, HttpResponse.BodyHandlers.ofString());
             var response = mapper.readValue(send.body(), BalanceResponse.class);
             return response.getValue();
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             throw new HttpRequestException(e);
         }
     }
