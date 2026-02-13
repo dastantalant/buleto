@@ -1,8 +1,8 @@
 package com.traderoom.analyzer.csv;
 
 import com.traderoom.core.csv.CsvReader;
-import com.traderoom.core.websocket.Round;
-import com.traderoom.monitoring.RoundDAO;
+import com.traderoom.common.model.Round;
+import com.traderoom.common.service.RoundDAO;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

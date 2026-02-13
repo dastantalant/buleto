@@ -1,7 +1,7 @@
 package com.traderoom.web.controller;
 
-import com.traderoom.web.entity.ConfigEntity;
-import com.traderoom.web.model.request.ConfigRequest;
+import com.traderoom.common.entity.ConfigEntity;
+import com.traderoom.common.model.request.ConfigRequest;
 import com.traderoom.web.service.ConfigService;
 
 import org.springframework.data.domain.Page;

@@ -1,8 +1,8 @@
 package com.traderoom.web.service.impl;
 
-import com.traderoom.web.entity.AccountEntity;
-import com.traderoom.web.mapper.AccountMapper;
-import com.traderoom.web.model.request.AccountRequest;
+import com.traderoom.common.entity.AccountEntity;
+import com.traderoom.common.mapper.AccountMapper;
+import com.traderoom.common.model.request.AccountRequest;
 import com.traderoom.web.repository.AccountRepository;
 import com.traderoom.web.service.AccountService;
 

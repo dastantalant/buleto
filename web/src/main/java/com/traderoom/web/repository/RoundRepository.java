@@ -1,7 +1,7 @@
 package com.traderoom.web.repository;
 
-import com.traderoom.web.entity.RoundEntity;
-import com.traderoom.web.model.RoundShort;
+import com.traderoom.common.entity.RoundEntity;
+import com.traderoom.common.model.RoundShort;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

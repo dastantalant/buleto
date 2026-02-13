@@ -8,7 +8,7 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>4.1.0-M1</version>
     </parent>
-    
+
     <groupId>com.traderoom</groupId>
     <artifactId>buleto</artifactId>
     <version>0.0.1</version>
@@ -18,10 +18,11 @@
         <module>analyzer</module>
         <module>api</module>
         <module>core</module>
-        <module>frontend</module>
-        <module>monitoring</module>
+        <!--        <module>frontend</module>-->
+        <!--        <module>monitoring</module>-->
         <module>strategy</module>
         <module>web</module>
+        <module>common</module>
     </modules>
 
     <properties>
@@ -30,13 +31,20 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <okhttp.version>5.3.2</okhttp.version> <!-- Nov 18, 2025 -->
+        <postgresql.version>42.7.9</postgresql.version> <!-- Jan 15, 2026 -->
+        <hikari.version>5.1.0</hikari.version> <!-- Aug 19, 2025 -->
+        <springdoc.version>3.0.1</springdoc.version> <!-- Jan 01, 2026 -->
         <lombok.version>1.18.42</lombok.version> <!-- Sep 18, 2025 -->
+        <mapstruct.version>1.6.3</mapstruct.version> <!-- Nov 09, 2024 -->
+        <jwt.version>4.5.0</jwt.version> <!-- Jan 29, 2025 -->
+        <okhttp.version>5.3.2</okhttp.version> <!-- Nov 18, 2025 -->
 
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version> <!-- May 31, 2025 -->
-        <frontend-maven-plugin.verion>1.15.4</frontend-maven-plugin.verion> <!-- Sep 26, 2025 -->
-        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version> <!-- Mar 24, 2023 -->
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version><!-- Sep 22, 2025 -->
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version> <!-- Mar 24, 2023 -->
+        <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version> <!-- Sep 13, 2025 -->
+        <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version> <!-- Nov 29, 2025 -->
+        <frontend-maven-plugin.verion>1.15.4</frontend-maven-plugin.verion> <!-- Sep 26, 2025 -->
 
         <node.version>24.11.1</node.version> <!-- Nov 11, 2025 -->
         <npm.version>11.6.2</npm.version> <!-- Oct 08, 2025 -->
@@ -47,6 +55,11 @@
             <dependency>
                 <groupId>com.traderoom</groupId>
                 <artifactId>api</artifactId>
+                <version>${app.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.traderoom</groupId>
+                <artifactId>common</artifactId>
                 <version>${app.version}</version>
             </dependency>
             <dependency>
@@ -63,6 +76,34 @@
                 <groupId>com.traderoom</groupId>
                 <artifactId>strategy</artifactId>
                 <version>${app.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>${jwt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikari.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
             </dependency>
 
             <dependency>
@@ -83,21 +124,28 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <version>${frontend-maven-plugin.verion}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <source>${java.version}</source>
                         <compilerArgs>
                             <arg>--add-modules</arg>
                             <arg>jdk.incubator.vector</arg>
                         </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
             </plugins>

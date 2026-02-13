@@ -1,11 +1,11 @@
 package com.traderoom.web.service.impl;
 
-import com.traderoom.web.entity.ConfigEntity;
-import com.traderoom.web.mapper.ConfigMapper;
+import com.traderoom.common.entity.ConfigEntity;
+import com.traderoom.common.mapper.ConfigMapper;
 import com.traderoom.web.service.ConfigService;
 import com.traderoom.web.service.RoundService;
 import com.traderoom.web.service.SimulateService;
-import com.traderoom.web.strategy.StrategyEnum;
+import com.traderoom.common.strategy.StrategyEnum;
 import com.traderoom.api.StrategyFactory;
 import com.traderoom.api.IStrategy;
 import com.traderoom.api.runner.web.WebSimulateResult;

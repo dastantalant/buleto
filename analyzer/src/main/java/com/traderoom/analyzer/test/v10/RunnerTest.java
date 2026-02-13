@@ -5,7 +5,7 @@ import com.traderoom.api.IStrategy;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.runner.Runner;
-import com.traderoom.monitoring.RoundDAO;
+import com.traderoom.common.service.RoundDAO;
 
 import java.util.Deque;
 import java.util.LinkedList;

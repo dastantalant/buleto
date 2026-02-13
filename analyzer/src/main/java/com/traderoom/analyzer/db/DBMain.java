@@ -1,14 +1,13 @@
 package com.traderoom.analyzer.db;
 
-import com.traderoom.core.websocket.Round;
-import com.traderoom.monitoring.CsvService;
+import com.traderoom.common.model.Round;
+import com.traderoom.common.service.CsvService;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.traderoom.web.service.impl;
 
-import com.traderoom.web.mapper.RoundMapper;
-import com.traderoom.web.model.RoundModel;
-import com.traderoom.web.model.RoundShort;
+import com.traderoom.common.mapper.RoundMapper;
+import com.traderoom.common.model.RoundModel;
+import com.traderoom.common.model.RoundShort;
 import com.traderoom.web.repository.RoundJdbcRepository;
 import com.traderoom.web.repository.RoundRepository;
 import com.traderoom.web.service.RoundService;

@@ -13,8 +13,8 @@ import com.traderoom.analyzer.example.BuletoSpotSupplier;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.runner.Simulator;
 import com.traderoom.api.runner.supplier.SpotSupplier;
-import com.traderoom.web.mapper.ConfigMapper;
-import com.traderoom.web.model.RawConfigModel;
+import com.traderoom.common.mapper.ConfigMapper;
+import com.traderoom.common.model.RawConfigModel;
 
 import java.util.Deque;
 import java.util.LinkedList;

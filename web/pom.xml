@@ -10,12 +10,11 @@
 
     <artifactId>web</artifactId>
 
-    <properties>
-        <springdoc.version>3.0.1</springdoc.version> <!-- Jan 01, 2026 -->
-        <mapstruct.version>1.6.3</mapstruct.version> <!-- Nov 09, 2024 -->
-        <jwt.version>4.5.0</jwt.version> <!-- Jan 29, 2025 -->
-    </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.traderoom</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.traderoom</groupId>
             <artifactId>monitoring</artifactId>
@@ -50,18 +49,15 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
         </dependency>
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>${jwt.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -75,7 +71,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <target>${java.version}</target>
                     <source>${java.version}</source>
@@ -83,12 +78,10 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

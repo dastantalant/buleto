@@ -1,7 +1,7 @@
 package com.traderoom.web.repository;
 
-import com.traderoom.web.model.RoundModel;
-import com.traderoom.core.websocket.Round;
+import com.traderoom.common.model.RoundModel;
+import com.traderoom.common.model.Round;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;

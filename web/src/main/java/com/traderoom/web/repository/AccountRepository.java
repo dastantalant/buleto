@@ -1,6 +1,6 @@
 package com.traderoom.web.repository;
 
-import com.traderoom.web.entity.AccountEntity;
+import com.traderoom.common.entity.AccountEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

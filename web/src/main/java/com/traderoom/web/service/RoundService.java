@@ -1,7 +1,7 @@
 package com.traderoom.web.service;
 
-import com.traderoom.web.model.RoundModel;
-import com.traderoom.web.model.RoundShort;
+import com.traderoom.common.model.RoundModel;
+import com.traderoom.common.model.RoundShort;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

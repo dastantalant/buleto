@@ -1,12 +1,6 @@
 package com.traderoom.core.io.text;
 
 import com.traderoom.core.io.buffer.BufferedInput;
-import com.traderoom.core.io.text.internal.tokenizer.DirectLineTokenizer;
-import com.traderoom.core.io.text.internal.tokenizer.DirectScalarLineTokenizer;
-import com.traderoom.core.io.text.internal.tokenizer.DirectVectorizedLineTokenizer;
-import com.traderoom.core.io.text.internal.tokenizer.HeapLineTokenizer;
-import com.traderoom.core.io.text.internal.tokenizer.HeapScalarLineTokenizer;
-import com.traderoom.core.io.text.internal.tokenizer.HeapVectorizedLineTokenizer;
 
 import java.io.Closeable;
 import java.io.IOException;

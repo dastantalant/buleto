@@ -1,6 +1,6 @@
 package com.traderoom.web.controller;
 
-import com.traderoom.web.model.RoundModel;
+import com.traderoom.common.model.RoundModel;
 import com.traderoom.web.service.RoundService;
 
 import org.springframework.data.domain.Page;

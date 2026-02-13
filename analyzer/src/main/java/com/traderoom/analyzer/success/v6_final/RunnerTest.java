@@ -13,8 +13,8 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.Snapshot;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.runner.Runner;
-import com.traderoom.web.mapper.ConfigMapper;
-import com.traderoom.web.model.RawConfigModel;
+import com.traderoom.common.mapper.ConfigMapper;
+import com.traderoom.common.model.RawConfigModel;
 
 import java.util.Deque;
 import java.util.LinkedList;

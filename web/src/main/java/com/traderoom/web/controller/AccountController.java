@@ -1,7 +1,7 @@
 package com.traderoom.web.controller;
 
-import com.traderoom.web.entity.AccountEntity;
-import com.traderoom.web.model.request.AccountRequest;
+import com.traderoom.common.entity.AccountEntity;
+import com.traderoom.common.model.request.AccountRequest;
 import com.traderoom.web.service.AccountService;
 
 import org.springframework.data.domain.Page;

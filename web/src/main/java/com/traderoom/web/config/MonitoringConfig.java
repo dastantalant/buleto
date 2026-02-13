@@ -1,7 +1,7 @@
 package com.traderoom.web.config;
 
-import com.traderoom.core.websocket.Client;
-import com.traderoom.monitoring.SaveSubscriber;
+import com.traderoom.common.websocket.Client;
+import com.traderoom.common.service.SaveSubscriber;
 
 import org.springframework.context.annotation.Bean;
 

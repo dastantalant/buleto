@@ -1,15 +1,5 @@
 import com.traderoom.analyzer.ProjectDump;
-import com.traderoom.analyzer.success.v7.RunnerTest;
 import com.traderoom.analyzer.test.v10.BaseStrategy;
-import com.traderoom.api.IStrategy;
-import com.traderoom.api.StrategyFactory;
-import com.traderoom.api.runner.Runner;
-import com.traderoom.core.util.CharSequenceUtil;
-import com.traderoom.core.util.DateTimeUtil;
-import com.traderoom.core.util.RoundJsonParser;
-import com.traderoom.core.websocket.Client;
-import com.traderoom.monitoring.MonitoringMain;
-import com.traderoom.strategy.strategies.BarnetStrategy;
 
 void main() throws IOException {
 //    ProjectDump.of(MonitoringMain.class.getPackage())
