@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ public class MultiOrderMarkovTest implements PredictorTest {
     private final double weightOrder2 = 0.65;
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         List<Spot> window = split(history, windowSize);
         if(window.size() < 2) return List.of();
 

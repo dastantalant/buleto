@@ -7,6 +7,7 @@ import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -23,29 +24,34 @@ public class FrequencyPredictor2 implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.isEmpty()) return List.of();
 
-        // Берем последние N спинов
         int limit = Math.min(history.size(), windowSize);
-        int start = history.size() - limit;
 
         Map<Spot, Double> weights = new EnumMap<>(Spot.class);
-
-        // Проходим от самого старого к новому
         double currentWeight = 1.0;
-        for (int i = start; i < history.size(); i++) {
-            Spot spot = history.get(i);
-            // Увеличиваем вес спота
+
+        var it = history.descendingIterator();
+
+        // пропускаем старые, если history > windowSize
+        int skip = history.size() - limit;
+        for (int i = 0; i < skip && it.hasNext(); i++) {
+            it.next();
+        }
+
+        // теперь идём от самого старого (в окне) к новому
+        while (it.hasNext()) {
+            Spot spot = it.next();
             weights.merge(spot, currentWeight, Double::sum);
-            // Увеличиваем множитель для следующих чисел (чем новее, тем весомее)
             currentWeight /= decayFactor;
         }
 
-        double totalWeight = weights.values().stream().mapToDouble(d -> d).sum();
+        double totalWeight = weights.values().stream().mapToDouble(Double::doubleValue).sum();
+        if (totalWeight == 0) return List.of();
 
         return weights.entrySet().stream()
-                .map(entry -> SpotPrediction.of(entry.getKey(), entry.getValue() / totalWeight))
+                .map(e -> SpotPrediction.of(e.getKey(), e.getValue() / totalWeight))
                 .sorted(Comparator.comparingDouble(SpotPrediction::probability).reversed())
                 .toList();
     }

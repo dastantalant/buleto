@@ -75,7 +75,7 @@ public class RegimeSwitchingStrategy extends AbstractStrategy {
     }
 
     private void analyzeMarket() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.isEmpty()) return;
 
         Map<Spot, Integer> freq = getMarket().getFrequencies();

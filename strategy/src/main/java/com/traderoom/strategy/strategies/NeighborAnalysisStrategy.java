@@ -10,6 +10,7 @@ import com.traderoom.api.AbstractStrategy;
 import com.traderoom.api.utils.BetHelper;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 @Strategy(tags = {Tag.PHYSICAL})
@@ -30,7 +31,7 @@ public class NeighborAnalysisStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < 2) {
             return List.of();
         }
@@ -41,22 +42,28 @@ public class NeighborAnalysisStrategy extends AbstractStrategy {
         return List.of();
     }
 
-    private double neighbor(List<Spot> history) {
+    private double neighbor(Deque<Spot> history) {
+        if (history.size() < 2) return 0.0;
+
         long neighborHits = 0;
         int window = Math.min(history.size() - 1, historyForTrendAnalysis);
-        for (int i = 0; i < window; i++) {
-            Spot cur = history.get(history.size() - 1 - i);
-            Spot prev = history.get(history.size() - 2 - i);
 
+        var it = history.descendingIterator();
+        Spot prev = it.next();  // самый последний
+
+        for (int i = 0; i < window && it.hasNext(); i++) {
+            Spot cur = it.next();
             try {
                 if (cur.getPhysicalDistance(prev, getConfig().rouletteType()) <= neighborDistanceThreshold) {
                     neighborHits++;
                 }
             } catch (IllegalArgumentException e) {
-                continue;
+                // skip
             }
+            prev = cur;  // для следующей итерации
         }
-        return (double) neighborHits / window;
+
+        return window == 0 ? 0.0 : (double) neighborHits / window;
     }
 
     private List<Bet> nextInternal(Spot last) {

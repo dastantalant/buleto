@@ -9,6 +9,7 @@ import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 @Strategy(tags = {Tag.PHYSICAL, Tag.STATISTICAL})
@@ -24,7 +25,7 @@ public class PivotStrategy extends AbstractStrategy {
         this.betsPlacedOnPivot = 0;
 
         // !!! ВАЖНО: Воспроизведение логики Пивота на истории !!!
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (!history.isEmpty()) {
             for (Spot spot : history) {
                 processPivotLogic(spot);

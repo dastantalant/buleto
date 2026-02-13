@@ -20,7 +20,7 @@ public class ConsensusPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.size() < medWin) return List.of(); // Нужно хотя бы среднее окно
 
         // Карты частот для трех окон
@@ -61,13 +61,21 @@ public class ConsensusPredictor implements Predictor {
                 .collect(Collectors.toList());
     }
 
-    private Map<Spot, Double> getFreqMap(List<Spot> history, int window) {
+    private Map<Spot, Double> getFreqMap(Deque<Spot> history, int window) {
         Map<Spot, Double> map = new HashMap<>();
-        int start = Math.max(0, history.size() - window);
-        List<Spot> sub = history.subList(start, history.size());
-        for (Spot s : sub) {
+        if (history.isEmpty()) return map;
+
+        int toTake = Math.min(window, history.size());
+
+        var it = history.descendingIterator();
+        int count = 0;
+
+        while (it.hasNext() && count < toTake) {
+            Spot s = it.next();
             map.merge(s, 1.0, Double::sum);
+            count++;
         }
+
         return map;
     }
 }

@@ -27,7 +27,7 @@ public class BayesianPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        List<Spot> window = HistoryUtil.window(state, windowSize);
         long totalSpins = window.size();
         Map<Spot, Long> frequencies = window.stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));

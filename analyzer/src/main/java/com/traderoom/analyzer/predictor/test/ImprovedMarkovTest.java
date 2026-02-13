@@ -6,6 +6,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.utils.BetHelper;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +18,7 @@ public class ImprovedMarkovTest implements PredictorTest {
     private final Map<BetType, Map<BetType, Long>> types = new ConcurrentHashMap<>();
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         List<Spot> window = split(history, windowSize);
         if(window.size() < 2) return List.of();
         updateModel(new Spot[]{window.get(window.size() - 2), window.getLast()}, rouletteType);

@@ -6,6 +6,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.utils.BetHelper;
 
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class MarkovTest2 implements PredictorTest {
     private long transitions = 0;
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         List<Spot> window = split(history, windowSize);
         if (window.size() < min) {
             return List.of();

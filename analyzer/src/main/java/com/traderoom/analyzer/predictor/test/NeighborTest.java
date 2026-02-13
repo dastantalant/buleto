@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 @Deprecated
@@ -12,7 +13,7 @@ public class NeighborTest implements PredictorTest {
     private final int neighborCount = 2;
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict( Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         if(history.isEmpty()) return List.of();
         Spot lastSpot = history.getLast();
         if (lastSpot == null) return List.of();

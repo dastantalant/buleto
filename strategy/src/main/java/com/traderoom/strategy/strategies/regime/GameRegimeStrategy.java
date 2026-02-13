@@ -7,6 +7,7 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class GameRegimeStrategy extends AbstractRegimeStrategy {
     }
 
     private Regime detectRegime() {
-        List<Spot> history = getState().getMarket().getHistory();
+        Deque<Spot> history = getState().getMarket().getHistory();
         int size = history.size();
         Optional<Regime> optional = detectTrend(history, size);
         if (optional.isPresent()) return optional.get();
@@ -43,40 +44,48 @@ public class GameRegimeStrategy extends AbstractRegimeStrategy {
         return optional.orElse(Regime.CHAOS);
     }
 
-    private Optional<Regime> detectTrend(List<Spot> history, int size) {
-        if (size >= trendStreak) {
-            Spot last = history.getLast();
-            boolean isTrend = true;
-            for (int i = 1; i < trendStreak; i++) {
-                if (history.get(size - 1 - i).isRed() != last.isRed()
-                        || history.get(size - 1 - i).isBlack() != last.isBlack()) {
-                    isTrend = false;
-                    break;
-                }
-            }
-            if (isTrend && !last.isGreen()) {
-                return Optional.of(Regime.TREND);
-            }
+    private Optional<Regime> detectTrend(Deque<Spot> history, int size) {
+        if (size < trendStreak) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        var it = history.descendingIterator();
+        Spot last = it.next();
+        if (last.isGreen()) return Optional.empty();
+        boolean lastIsRed = last.isRed();
+        boolean isTrend = true;
+        int checked = 1;
+        while (it.hasNext() && checked < trendStreak) {
+            Spot prev = it.next();
+            if (prev.isRed() != lastIsRed || prev.isGreen()) {
+                isTrend = false;
+                break;
+            }
+            checked++;
+        }
+        return isTrend ? Optional.of(Regime.TREND) : Optional.empty();
     }
 
-    private Optional<Regime> detectAlternating(List<Spot> history, int size) {
-        if (size >= alternatingStreak) {
-            boolean isAlternating = true;
-            for (int i = 0; i < alternatingStreak - 1; i++) {
-                Spot s1 = history.get(size - 1 - i);
-                Spot s2 = history.get(size - 2 - i);
-                if (s1.isGreen() || s2.isGreen() || (s1.isRed() == s2.isRed())) {
-                    isAlternating = false;
-                    break;
-                }
-            }
-            if (isAlternating) {
-                return Optional.of(Regime.ALTERNATING);
-            }
+    private Optional<Regime> detectAlternating(Deque<Spot> history, int size) {
+        if (size < alternatingStreak) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        var it = history.descendingIterator();
+        Spot current = it.next();
+        if (current.isGreen()) {
+            return Optional.empty();
+        }
+        boolean isAlternating = true;
+        int checked = 1;
+        while (it.hasNext() && checked < alternatingStreak) {
+            Spot prev = it.next();
+            if (current.isGreen() || prev.isGreen() || (current.isRed() == prev.isRed())) {
+                isAlternating = false;
+                break;
+            }
+            current = prev;
+            checked++;
+        }
+        return isAlternating ? Optional.of(Regime.ALTERNATING) : Optional.empty();
     }
 
     private List<Bet> handleTrendRegime() {

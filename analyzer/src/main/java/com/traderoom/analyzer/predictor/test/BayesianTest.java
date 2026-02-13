@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 public class BayesianTest implements PredictorTest {
     private static final double PRIOR_WEIGHT = 1.0;
 
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         List<Spot> window = split(history, windowSize);
         long totalSpins = window.size();
         Map<Spot, Long> frequencies = window.stream()

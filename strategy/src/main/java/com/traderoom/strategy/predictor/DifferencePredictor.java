@@ -6,6 +6,7 @@ import com.traderoom.api.model.State;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.Predictor;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ public class DifferencePredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.isEmpty()) {
             return List.of();
         }

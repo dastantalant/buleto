@@ -7,6 +7,7 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 
@@ -32,11 +33,11 @@ public class ZScoreReversionStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         int n = Math.min(history.size(), sampleSize);
         if (n < 50) return List.of(); // Нужен разгон
 
-        List<Spot> window = history.subList(history.size() - n, history.size());
+        List<Spot> window = HistoryUtil.window(history, n);
 
         // 1. Считаем фактические частоты
         Map<Spot, Long> counts = new EnumMap<>(Spot.class);

@@ -7,6 +7,7 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 
@@ -36,12 +37,12 @@ public class NeighborStrategyV2 extends AbstractStrategy {
     public List<Bet> decide() {
         if (wheelLayout == null || wheelSize == 0) return List.of();
 
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < windowSize) return List.of();
 
         // 1. Построение тепловой карты колеса (Heatmap)
         int[] sectorHits = new int[wheelSize];
-        List<Spot> recent = history.subList(history.size() - windowSize, history.size());
+        List<Spot> recent = HistoryUtil.window(history, wheelSize);
 
         for (Spot s : recent) {
             int pos = s.getWheelPosition(getConfig().rouletteType());

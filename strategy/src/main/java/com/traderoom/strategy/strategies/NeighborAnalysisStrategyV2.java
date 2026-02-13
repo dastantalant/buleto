@@ -10,6 +10,7 @@ import com.traderoom.api.AbstractStrategy;
 import com.traderoom.api.utils.BetHelper;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -38,7 +39,7 @@ public class NeighborAnalysisStrategyV2 extends AbstractStrategy {
     @Override
     public List<Bet> decide() {
         State state = getState();
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.size() < HISTORY_WINDOW || wheelLayout == null) {
             return List.of();
         }
@@ -64,33 +65,35 @@ public class NeighborAnalysisStrategyV2 extends AbstractStrategy {
 
     @Override
     protected void onRoundCustom(Spot outcome, List<Bet> bets) {
-        // Виртуальная проверка: Угадали бы мы в этом раунде?
-        if (getState().getMarket().getHistory().size() > 1) {
-            Spot prevSpot = getState().getMarket().getHistory().get(getState().getMarket().getHistory().size() - 2);
-            boolean hit = isNeighbor(prevSpot, outcome);
+        Deque<Spot> history = getState().getMarket().getHistory();
+        if (history.size() <= 1) return;
+        var it = history.descendingIterator();
+        Spot prevSpot = it.next();
+        prevSpot = it.next();
+        boolean hit = isNeighbor(prevSpot, outcome);
 
-            virtualResults.add(hit);
-            if (virtualResults.size() > ACCURACY_WINDOW) {
-                virtualResults.removeFirst();
-            }
+        virtualResults.add(hit);
+        if (virtualResults.size() > ACCURACY_WINDOW) {
+            virtualResults.removeFirst();
         }
     }
 
-    private double calculateNeighborBias(List<Spot> history) {
+    private double calculateNeighborBias(Deque<Spot> history) {
+        if (history.size() < 2) return 0.0;
         int hits = 0;
         int checks = 0;
-        // Берем последние N спинов
-        int start = Math.max(0, history.size() - HISTORY_WINDOW - 1);
-
-        for (int i = start; i < history.size() - 1; i++) {
-            Spot current = history.get(i);
-            Spot next = history.get(i + 1);
+        var it = history.descendingIterator();
+        Spot next = it.next();
+        int limit = Math.min(HISTORY_WINDOW, history.size() - 1);
+        for (int i = 0; i < limit && it.hasNext(); i++) {
+            Spot current = it.next();
             if (isNeighbor(current, next)) {
                 hits++;
             }
             checks++;
+            next = current;
         }
-        return checks == 0 ? 0 : (double) hits / checks;
+        return checks == 0 ? 0.0 : (double) hits / checks;
     }
 
     private double calculateRecentAccuracy() {

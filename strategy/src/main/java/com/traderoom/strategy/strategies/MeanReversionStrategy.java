@@ -9,6 +9,7 @@ import com.traderoom.api.model.config.Config;
 import com.traderoom.api.AbstractStrategy;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +31,7 @@ public class MeanReversionStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < colorStreakThreshold) {
             return List.of();
         }
@@ -60,7 +61,7 @@ public class MeanReversionStrategy extends AbstractStrategy {
         return Optional.empty();
     }
 
-    private Optional<BetType> processStreak(List<Spot> history) {
+    private Optional<BetType> processStreak(Deque<Spot> history) {
         List<BetType> colors = extractLastColors(history);
         Optional<BetType> opt = Optional.empty();
         if (colors.size() >= colorStreakThreshold) {
@@ -79,7 +80,7 @@ public class MeanReversionStrategy extends AbstractStrategy {
         return opt;
     }
 
-    private List<BetType> extractLastColors(List<Spot> history) {
+    private List<BetType> extractLastColors(Deque<Spot> history) {
         List<BetType> types = new ArrayList<>(history.size());
         for (Spot spot : history) {
             if (spot.isRed()) {

@@ -1,5 +1,6 @@
 import com.traderoom.analyzer.ProjectDump;
 import com.traderoom.analyzer.test.v10.BaseStrategy;
+import com.traderoom.api.StrategyFactory;
 
 void main() throws IOException {
 //    ProjectDump.of(MonitoringMain.class.getPackage())
@@ -14,7 +15,7 @@ void main() throws IOException {
 //            .exclude(Runner.class.getPackage())
 //            .debug()
 //            .write();
-    ProjectDump.of(BaseStrategy.class.getPackage())
+    ProjectDump.of(StrategyFactory.class.getPackage())
                         .lineImport(false)
             .linePackage(true)
             .debug()

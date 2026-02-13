@@ -6,7 +6,9 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.AbstractStrategy;
 import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,16 +24,12 @@ public class StraightUpStrategy3 extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        count = isLastBetWon() ? count + 1 : 0;
-
-        List<Spot> history = getMarket().getHistory();
-        int size = history.size();
-        Set<Spot> excluded = new HashSet<>(history.subList(Math.max(0, size - count), size));
-
+        count = isLastBetWon() ? 0 : count + 1;
+        Set<Spot> excluded = new HashSet<>(HistoryUtil.window(getMarket().getHistory(), count));
         return Spot.getAvailableList(getConfig().rouletteType())
                 .stream()
                 .filter(spot -> !excluded.contains(spot))
-                .map(spot -> Bet.of(BetHelper.getStraightUp(spot), getMinBet()))
+                .map(spot -> BetHelper.betting(spot, getMinBet()))
                 .toList();
     }
 }

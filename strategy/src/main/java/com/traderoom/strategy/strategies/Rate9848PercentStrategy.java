@@ -8,6 +8,7 @@ import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.AbstractStrategy;
 
+import java.util.Deque;
 import java.util.List;
 
 @Strategy(tags = {Tag.COVERAGE})
@@ -19,17 +20,22 @@ public class Rate9848PercentStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        if (3 <= getMarket().getHistory().size()) {
-            Spot spot1 = getMarket().getHistory().get(getMarket().getHistory().size() - 3);
-            Spot spot2 = getMarket().getHistory().get(getMarket().getHistory().size() - 2);
-            Spot spot3 = getMarket().getHistory().getLast();
-            if (spot1.isFirstDozenOrZeroAndDoubleZero()
-                    && spot2.isFirstDozenOrZeroAndDoubleZero()
-                    && spot3.isFirstDozenOrZeroAndDoubleZero()) {
-                var lastBets = getLastBets();
-                long value = (lastBets != null && !lastBets.isEmpty()) ? lastBets.getFirst().value() * 2 : getMinBet();
-                return List.of(Bet.of(BetType.SECOND_DOZEN, value), Bet.of(BetType.THIRD_DOZEN, value));
-            }
+        Deque<Spot> history = getMarket().getHistory();
+        if (history.size() < 3) return List.of();
+
+        var it = history.descendingIterator();
+        Spot s3 = it.next();
+        Spot s2 = it.next();
+        Spot s1 = it.next();
+
+        if (s1.isFirstDozenOrZeroAndDoubleZero()
+                && s2.isFirstDozenOrZeroAndDoubleZero()
+                && s3.isFirstDozenOrZeroAndDoubleZero()) {
+            var lastBets = getLastBets();
+            long value = (lastBets != null && !lastBets.isEmpty())
+                    ? lastBets.getFirst().value() * 2
+                    : getMinBet();
+            return Bet.of(BetType.SECOND_DOZEN, value, BetType.THIRD_DOZEN, value);
         }
         return List.of();
     }

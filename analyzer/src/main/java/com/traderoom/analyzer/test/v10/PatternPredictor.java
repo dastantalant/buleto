@@ -5,9 +5,11 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +25,12 @@ public class PatternPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         int size = history.size();
         if (size < 10) return List.of();
 
         int start = Math.max(0, size - analysisWindowSize);
-        List<Spot> window = history.subList(start, size);
+        List<Spot> window = HistoryUtil.window(history,analysisWindowSize);//history.subList(start, size);
 
         EnumMap<Spot, Double> weights = new EnumMap<>(Spot.class);
 

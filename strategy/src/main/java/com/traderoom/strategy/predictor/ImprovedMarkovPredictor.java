@@ -11,6 +11,7 @@ import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.Predictor;
 import com.traderoom.api.utils.BetHelper;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,59 +49,62 @@ public class ImprovedMarkovPredictor implements Predictor {
             }
         }
     }
-
     @Override
     public List<BetTypePrediction> predictType(State state, Config config) {
-        if (state.getMarket().getHistory().size() < size) {
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.size() < size) {
             return List.of();
         }
 
-        List<Spot> history = state.getMarket().getHistory();
-        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
+        var it = history.descendingIterator();
+        Spot last  = it.next();
+        Spot prev  = it.next();
 
-        List<BetType> betTypes = findTypes(state.getMarket().getLastSpot(), config.rouletteType());
+        updateModel(new Spot[]{prev, last}, config.rouletteType());
+
+        List<BetType> betTypes = findTypes(last, config.rouletteType());
 
         Map<BetType, Long> collect = betTypes.stream()
                 .flatMap(lastType -> types.getOrDefault(lastType, Map.of()).entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingLong(Map.Entry::getValue)));
+
         if (collect.isEmpty()) {
             return List.of();
         }
 
-        final double sum = collect.values()
-                .stream()
-                .mapToDouble(Long::doubleValue)
-                .sum();
-        return (sum == 0) ? List.of()
-                : collect.entrySet().stream()
-                .map(entry -> BetTypePrediction.of(entry.getKey(), entry.getValue() / sum))
-                .filter(item -> item.probability() > 0)
+        final double sum = collect.values().stream().mapToDouble(Long::doubleValue).sum();
+        if (sum == 0) return List.of();
+
+        return collect.entrySet().stream()
+                .map(e -> BetTypePrediction.of(e.getKey(), e.getValue() / sum))
+                .filter(p -> p.probability() > 0)
                 .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability()))
                 .toList();
     }
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        if (state.getMarket().getHistory().size() < size) {
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.size() < size) {
             return List.of();
         }
 
-        List<Spot> history = state.getMarket().getHistory();
-        updateModel(new Spot[]{history.get(history.size() - 2), history.getLast()}, config.rouletteType());
+        var it = history.descendingIterator();
+        Spot last = it.next();
+        Spot prev = it.next();
 
-        Map<Spot, Long> map = spots.getOrDefault(state.getMarket().getLastSpot(), Map.of());
+        updateModel(new Spot[]{prev, last}, config.rouletteType());
 
+        Map<Spot, Long> map = spots.getOrDefault(last, Map.of());
         if (map.isEmpty()) {
             return List.of();
         }
 
-        final double sum = map.values()
-                .stream()
-                .mapToDouble(Long::doubleValue)
-                .sum();
-        return (sum == 0) ? List.of()
-                : map.entrySet().stream()
-                .map(entry -> SpotPrediction.of(entry.getKey(), entry.getValue() / sum))
+        final double sum = map.values().stream().mapToDouble(Long::doubleValue).sum();
+        if (sum == 0) return List.of();
+
+        return map.entrySet().stream()
+                .map(e -> SpotPrediction.of(e.getKey(), e.getValue() / sum))
                 .sorted((p1, p2) -> Double.compare(p2.probability(), p1.probability()))
                 .toList();
     }

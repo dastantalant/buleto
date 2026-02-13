@@ -6,9 +6,12 @@ import com.traderoom.api.model.ColorPrediction;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -40,7 +43,7 @@ public class CustomPatternPredictor implements Predictor {
      * Если число выпало >1 раза в недавнем окне, его вероятность умножается на 1.2.
      * Это стратегия следования за трендом.
      */
-    private final double hotSpotWeight= 1.2;
+    private final double hotSpotWeight = 1.2;
 
     /**
      * Множитель для "Холодных" чисел.
@@ -52,25 +55,25 @@ public class CustomPatternPredictor implements Predictor {
      * Множитель для чисел, которых не было вообще в окне анализа.
      * Сильное снижение вероятности (x0.5).
      */
-    private final double neverSeenWeight= 0.5;
+    private final double neverSeenWeight = 0.5;
 
     /**
      * Множитель для числовых соседей (Consecutive).
      * Пример: выпало 5. Числа 4 и 6 получат бонус x1.3.
      */
-    private final double consecutiveWeight=1.3;
+    private final double consecutiveWeight = 1.3;
 
     /**
      * Множитель для повторяющегося паттерна (A-B-A -> B).
      * Пример: 10-5-10 -> ожидаем 5. Бонус x1.1.
      */
-    private final double repeatingPatternWeight=1.1;
+    private final double repeatingPatternWeight = 1.1;
 
     /**
      * Множитель повтора последнего числа.
      * Пример: выпало 32. Вероятность повтора 32 умножается на 0.7 (считаем повтор маловероятным).
      */
-    private final double lastSpotWeight=0.7;
+    private final double lastSpotWeight = 0.7;
 
     // --- Настройки окна анализа ---
 
@@ -82,19 +85,19 @@ public class CustomPatternPredictor implements Predictor {
     /**
      * Размер "короткого" окна для определения Hot Spot (последние 10 спинов).
      */
-    private final int hotWindowSize=10;
+    private final int hotWindowSize = 10;
 
     /**
      * Порог "холода": сколько спинов число не выпадало, чтобы считаться холодным (15).
      */
-    private final int coldThreshold=15;
+    private final int coldThreshold = 15;
 
     /**
      * Минимальное количество истории для начала работы (4).
      */
-    private final int minHistoryRequired=4;
+    private final int minHistoryRequired = 4;
 
-    private final double defaultProbability=0.0;
+    private final double defaultProbability = 0.0;
 
     /**
      * Конструктор по умолчанию. Использует окно анализа 1024.
@@ -124,7 +127,7 @@ public class CustomPatternPredictor implements Predictor {
      */
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = getSlidingWindow(state);
+        List<Spot> history = HistoryUtil.window(state, analysisWindowSize);
 
         if (history.size() < minHistoryRequired) {
             return List.of();
@@ -171,13 +174,21 @@ public class CustomPatternPredictor implements Predictor {
      * Возвращает "скользящее окно" истории (последние N элементов).
      * Это позволяет предиктору адаптироваться к изменениям и забывать старые данные.
      */
-    private List<Spot> getSlidingWindow(State state) {
-        List<Spot> fullHistory = state.getMarket().getHistory();
-        int size = fullHistory.size();
-        if (size == 0) return Collections.emptyList();
-        int start = Math.max(0, size - analysisWindowSize);
-        return fullHistory.subList(start, size);
-    }
+//    private List<Spot> getSlidingWindow(State state) {
+//        Deque<Spot> fullHistory = state.getMarket().getHistory();
+//        if (fullHistory.isEmpty()) return List.of();
+//        int size = fullHistory.size();
+//        int window = Math.min(analysisWindowSize, size);
+//        List<Spot> result = new ArrayList<>(window);
+//        var iterator = fullHistory.descendingIterator();
+//        int collected = 0;
+//        while (iterator.hasNext() && collected < window) {
+//            result.add(iterator.next());
+//            collected++;
+//        }
+//        Collections.reverse(result);
+//        return result;
+//    }
 
     /**
      * Рассчитывает базовую частоту выпадения чисел в окне.

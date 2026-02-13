@@ -6,7 +6,9 @@ import com.traderoom.api.annotation.Strategy;
 import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.Deque;
 import java.util.List;
 
 @Strategy(tags = {Tag.PATTERN, Tag.STATISTICAL})
@@ -22,12 +24,13 @@ public class MarketRegimeStrategy extends AbstractRegimeStrategy {
 
     @Override
     public List<Bet> decide() {
-        int size = getMarket().getHistory().size();
+        Deque<Spot> history = getMarket().getHistory();
+        int size = history.size();
         if (size < historyWindow) {
             return List.of();
         }
 
-        DoubleTriple triple = calculateMetrics(getMarket().getHistory().subList(size - historyWindow, size));
+        DoubleTriple triple = calculateMetrics(HistoryUtil.window(history, historyWindow));
         Regime regime = determineRegime(triple.getFirst(), triple.getSecond());
         return applyTactic(regime);
     }

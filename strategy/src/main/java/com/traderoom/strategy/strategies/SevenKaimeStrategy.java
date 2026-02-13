@@ -3,10 +3,12 @@ package com.traderoom.strategy.strategies;
 import com.traderoom.api.enums.BetType;
 import com.traderoom.api.annotation.Strategy;
 import com.traderoom.api.annotation.Tag;
+import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.AbstractStrategy;
 
+import java.util.Deque;
 import java.util.List;
 
 @Strategy(tags = {Tag.PATTERN})
@@ -18,15 +20,16 @@ public class SevenKaimeStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        boolean matched = true;
-        if (7 <= getMarket().getHistory().size()) {
-            for (int i = 0; i < 7; i++) {
-                if (getMarket().getHistory().get(getMarket().getHistory().size() - (1 + i)).isBlack()) {
-                    matched = false;
-                    break;
-                }
+        Deque<Spot> history = getMarket().getHistory();
+        if (history.size() < 7) return List.of();
+        var it = history.descendingIterator();
+        boolean allRed = true;
+        for (int i = 0; i < 7 && it.hasNext(); i++) {
+            if (it.next().isBlack()) {
+                allRed = false;
+                break;
             }
         }
-        return matched ? Bet.list(BetType.RED, getMinBet()) : List.of();
+        return allRed ? Bet.list(BetType.RED, getMinBet()) : List.of();
     }
 }

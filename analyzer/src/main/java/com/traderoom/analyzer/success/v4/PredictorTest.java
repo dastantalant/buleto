@@ -3,18 +3,17 @@ package com.traderoom.analyzer.success.v4;
 import com.traderoom.api.enums.RouletteType;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
 @FunctionalInterface
 public interface PredictorTest {
-    List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize);
+    List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize);
 
-    default List<Spot> split(List<Spot> history, int windowSize) {
-        int size = history.size();
-        if (size == 0 || windowSize > history.size()) return new LinkedList<>();
-        int start = Math.max(0, size - windowSize);
-        return history.subList(start, size);
+    default List<Spot> split(Deque<Spot> history, int windowSize) {
+        return HistoryUtil.window(history, windowSize);
     }
 }

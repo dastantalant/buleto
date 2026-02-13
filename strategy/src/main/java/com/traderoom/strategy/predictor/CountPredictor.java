@@ -25,7 +25,7 @@ public class CountPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        List<Spot> window = HistoryUtil.window(state, windowSize);
         double total = window.size();
         if (total == 0) return List.of();
 
@@ -42,7 +42,7 @@ public class CountPredictor implements Predictor {
 
     @Override
     public List<BetTypePrediction> predictType(State state, Config config) {
-        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        List<Spot> window = HistoryUtil.window(state, windowSize);
         double total = window.size();
         if (total == 0) return List.of();
 
@@ -64,7 +64,7 @@ public class CountPredictor implements Predictor {
 
     @Override
     public ColorPrediction predictColor(State state, Config config) {
-        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        List<Spot> window = HistoryUtil.window(state, windowSize);
         double total = window.size();
         if (total == 0) return ColorPrediction.of();
 

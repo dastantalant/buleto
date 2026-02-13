@@ -5,8 +5,10 @@ import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.Predictor;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,11 +27,8 @@ public class SlidingWindowFreqPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
-        int historySize = history.size();
-
-        int startIndex = Math.max(0, historySize - windowSize);
-        List<Spot> window = history.subList(startIndex, historySize);
+        Deque<Spot> history = state.getMarket().getHistory();
+        List<Spot> window = HistoryUtil.window(history, windowSize);
         double totalInWindow = window.size();
 
         Map<Spot, Long> counts = window.stream()

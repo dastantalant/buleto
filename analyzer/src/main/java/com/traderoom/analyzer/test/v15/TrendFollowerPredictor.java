@@ -16,15 +16,26 @@ public class TrendFollowerPredictor implements Predictor {
     }
 
     public Color predict(State state) {
-        Spot last = state.getMarket().getLastSpot();
-        if (last == null || last.isGreen()) {
-            // Если зеро, ищем последний цвет
-            List<Spot> history = state.getMarket().getHistory();
-            for (int i = history.size() - 1; i >= 0; i--) {
-                if (!history.get(i).isGreen()) return history.get(i).getColor();
-            }
-            return Color.RED; // Дефолт
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.isEmpty()) {
+            return Color.RED; // или другой дефолт
         }
-        return last.getColor();
+
+        var it = history.descendingIterator();
+        Spot last = it.next();
+
+        if (!last.isGreen()) {
+            return last.getColor();
+        }
+
+        // ищем последний не-зелёный с конца
+        while (it.hasNext()) {
+            Spot spot = it.next();
+            if (!spot.isGreen()) {
+                return spot.getColor();
+            }
+        }
+
+        return Color.RED; // дефолт, если вся история — только зелёные
     }
 }

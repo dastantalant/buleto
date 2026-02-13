@@ -11,6 +11,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.AbstractStrategy;
 
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,19 +80,26 @@ public class QLearningAgentStrategy extends AbstractStrategy {
     }
 
     private QState getCurrentState() {
-        if (getMarket().getHistory().isEmpty()) {
+        Deque<Spot> history = getMarket().getHistory();
+        if (history.isEmpty()) {
             return QState.of(Color.GREEN, 0, getBalanceLevel());
         }
 
-        List<Spot> history = getMarket().getHistory();
-        Spot lastSpot = history.getLast();
-        Color lastColor = getSpotColor(lastSpot);
+        var it = history.descendingIterator();
+        Spot last = it.next();
+        Color lastColor = getSpotColor(last);
 
         int streak = 1;
-        for (int i = history.size() - 2; i >= 0; i--) {
-            if (getSpotColor(history.get(i)) == lastColor) streak++;
-            else break;
+        while (it.hasNext()) {
+            Spot prev = it.next();
+            if (getSpotColor(prev) == lastColor) {
+                streak++;
+                if (streak >= 5) break;
+            } else {
+                break;
+            }
         }
+
         return QState.of(lastColor, Math.min(streak, 5), getBalanceLevel());
     }
 

@@ -7,6 +7,7 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.AbstractStrategy;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 
@@ -44,10 +45,10 @@ public class RegimeTrendFollowerStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getState().getMarket().getHistory();
+        Deque<Spot> history = getState().getMarket().getHistory();
         if (history.size() < WINDOW) return List.of();
 
-        List<Spot> recent = history.subList(history.size() - WINDOW, history.size());
+        List<Spot> recent = HistoryUtil.window(history, WINDOW);
         List<Bet> bets = new ArrayList<>();
         long baseBet = getMinBet();
 

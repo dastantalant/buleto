@@ -4,6 +4,8 @@ import com.traderoom.api.*;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.*;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,17 +18,17 @@ public class CycleBreakerPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.isEmpty()) return List.of();
 
         // Берем последние N спинов (полуцикл 18-20 чисел)
         int currentWindow = Math.min(history.size(), windowSize);
-        List<Spot> cycle = history.subList(history.size() - currentWindow, history.size());
+        List<Spot> cycle = HistoryUtil.window(history,windowSize);//history.subList(history.size() - currentWindow, history.size());
 
         // Считаем частоту
-        Map<Spot, Integer> frequency = new HashMap<>();
+        Map<Spot, Integer> frequency = new EnumMap<>(Spot.class);
         // Также запоминаем последний индекс, чтобы при равенстве брать более "свежее"
-        Map<Spot, Integer> lastSeen = new HashMap<>();
+        Map<Spot, Integer> lastSeen = new EnumMap<>(Spot.class);
 
         for (int i = 0; i < cycle.size(); i++) {
             Spot s = cycle.get(i);
@@ -43,6 +45,6 @@ public class CycleBreakerPredictor implements Predictor {
                 })
                 .limit(3) // Берем ТОП-3 горячих
                 .map(e -> SpotPrediction.of(e.getKey(), 1.0))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

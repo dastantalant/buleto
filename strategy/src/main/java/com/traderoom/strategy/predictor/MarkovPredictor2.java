@@ -10,6 +10,7 @@ import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.Predictor;
 import com.traderoom.api.utils.BetHelper;
 
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -75,37 +76,35 @@ public class MarkovPredictor2 implements Predictor {
     }
 
     private void updateMarkovModel(State state, Config config) {
-        if (state.getMarket().getHistory().size() < min) {
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.size() < min) {
             return;
         }
-
-        for (int i = 0; i < state.getMarket().getHistory().size() - 1; i++) {
-            Spot spot1 = state.getMarket().getHistory().get(i);
-            Spot spot2 = state.getMarket().getHistory().get(i + 1);
-            spotMap.computeIfAbsent(spot1, k -> new EnumMap<>(Spot.class))
-                    .merge(spot2, 1L, Long::sum);
-        }
-
-        for (int i = 0; i < state.getMarket().getHistory().size() - 1; i++) {
-            Spot spot1 = state.getMarket().getHistory().get(i);
-            Spot spot2 = state.getMarket().getHistory().get(i + 1);
-            List<BetType> list1 = BetType.getAvailableList(config.rouletteType())
+        var iterator = history.iterator();
+        if (!iterator.hasNext()) return;
+        Spot prev = iterator.next();
+        while (iterator.hasNext()) {
+            Spot curr = iterator.next();
+            spotMap.computeIfAbsent(prev, k -> new EnumMap<>(Spot.class))
+                    .merge(curr, 1L, Long::sum);
+            Spot finalPrev = prev;
+            List<BetType> wins1 = BetType.getAvailableList(config.rouletteType())
                     .stream()
-                    .filter(type -> BetHelper.isWin(type, spot1))
+                    .filter(type -> BetHelper.isWin(type, finalPrev))
                     .toList();
-            List<BetType> list2 = BetType.getAvailableList(config.rouletteType())
+            List<BetType> wins2 = BetType.getAvailableList(config.rouletteType())
                     .stream()
-                    .filter(type -> BetHelper.isWin(type, spot2))
+                    .filter(type -> BetHelper.isWin(type, curr))
                     .toList();
-
-            for (BetType type1 : list1) {
-                for (BetType type2 : list2) {
-                    typeMap.computeIfAbsent(type1, k -> new EnumMap<>(BetType.class))
-                            .merge(type2, 1L, Long::sum);
+            for (BetType t1 : wins1) {
+                for (BetType t2 : wins2) {
+                    typeMap.computeIfAbsent(t1, k -> new EnumMap<>(BetType.class))
+                            .merge(t2, 1L, Long::sum);
                 }
             }
+            prev = curr;
         }
-        transitions = state.getMarket().getHistory().size() - 1L;
+        transitions = history.size() - 1L;
     }
 
     private double calculate(long occurrences) {

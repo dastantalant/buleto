@@ -6,9 +6,12 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -125,7 +128,7 @@ public class CustomPatternPredictorV2 implements Predictor {
      */
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = getSlidingWindow(state);
+        List<Spot> history = HistoryUtil.window(state, analysisWindowSize);
         if (history.size() < minHistoryRequired) return List.of();
 
         // 1. Z-Score: Глобальный статистический анализ (на всем окне 1000+ спинов)
@@ -245,13 +248,21 @@ public class CustomPatternPredictorV2 implements Predictor {
      * Возвращает "скользящее окно" истории (последние N элементов).
      * Это позволяет предиктору адаптироваться к изменениям и забывать старые данные.
      */
-    private List<Spot> getSlidingWindow(State state) {
-        List<Spot> fullHistory = state.getMarket().getHistory();
-        int size = fullHistory.size();
-        if (size == 0) return Collections.emptyList();
-        int start = Math.max(0, size - analysisWindowSize);
-        return fullHistory.subList(start, size);
-    }
+//    private List<Spot> getSlidingWindow(State state) {
+//        Deque<Spot> fullHistory = state.getMarket().getHistory();
+//        if (fullHistory.isEmpty()) return List.of();
+//        int size = fullHistory.size();
+//        int window = Math.min(analysisWindowSize, size);
+//        List<Spot> result = new ArrayList<>(window);
+//        var iterator = fullHistory.descendingIterator();
+//        int collected = 0;
+//        while (iterator.hasNext() && collected < window) {
+//            result.add(iterator.next());
+//            collected++;
+//        }
+//        Collections.reverse(result);
+//        return result;
+//    }
 
     /**
      * Рассчитывает базовую частоту выпадения чисел в окне.

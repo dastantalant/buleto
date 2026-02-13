@@ -5,6 +5,8 @@ import com.traderoom.api.*;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.*;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,12 +19,12 @@ public class SmartCollectorPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.isEmpty()) return List.of();
 
         // Берем последние N спинов (цикл)
         int currentWindow = Math.min(history.size(), windowSize);
-        List<Spot> cycle = history.subList(history.size() - currentWindow, history.size());
+        List<Spot> cycle = HistoryUtil.window(history,windowSize);//history.subList(history.size() - currentWindow, history.size());
 
         // Считаем частоту выпадения каждого числа в этом цикле
         Map<Spot, Integer> frequency = new EnumMap<>(Spot.class);

@@ -7,6 +7,7 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,13 +30,14 @@ public class SmartMarkovStrategyV2 extends AbstractStrategy {
 
     public SmartMarkovStrategyV2(Config config) {
         super(config);
-        List<Spot> history = getMarket().getHistory();
-        if (history.size() >= 2) {
-            for (int i = 1; i < history.size(); i++) {
-                Spot prev = history.get(i - 1);
-                Spot curr = history.get(i);
-                updateModel(prev, curr);
-            }
+        Deque<Spot> history = getMarket().getHistory();
+        if (history.size() < 2) return;
+        var iterator = history.iterator();
+        Spot prev = iterator.next();
+        while (iterator.hasNext()) {
+            Spot curr = iterator.next();
+            updateModel(prev, curr);
+            prev = curr;
         }
     }
 
@@ -68,9 +70,11 @@ public class SmartMarkovStrategyV2 extends AbstractStrategy {
 
     @Override
     protected void onRoundCustom(Spot currentSpot, List<Bet> bets) {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < 2) return;
-        Spot previousSpot = history.get(history.size() - 2); // Предпоследний элемент, так как текущий уже добавлен
+        Iterator<Spot> iterator = history.descendingIterator();
+        iterator.next();
+        Spot previousSpot = iterator.next();
 
         updateModel(previousSpot, currentSpot);
     }

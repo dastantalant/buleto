@@ -7,6 +7,7 @@ import com.traderoom.api.model.config.Config;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.annotation.Strategy;
 import com.traderoom.api.model.Bet;
+import com.traderoom.api.utils.HistoryUtil;
 import com.traderoom.strategy.strategies.MeanReversionStrategy;
 import com.traderoom.strategy.strategies.ParoliStrategy;
 import com.traderoom.strategy.strategies.regime.AbstractRegimeStrategy;
@@ -38,7 +39,7 @@ public class EnhancedMarketRegimeStrategy extends AbstractRegimeStrategy {
         if (size < historyWindow) {
             return List.of();
         }
-        DoubleTriple metrics = calculateMetrics(history.subList(size - historyWindow, size));
+        DoubleTriple metrics = calculateMetrics(HistoryUtil.window(history, historyWindow));
         double redRate = metrics.getFirst();
         boolean isTrendRegime = (redRate >= trendThreshold) || (redRate <= (1.0 - trendThreshold));
         IStrategy activeStrategy = isTrendRegime ? trendFollowingStrategy : meanReversionStrategy;

@@ -25,7 +25,7 @@ public class MultiOrderMarkovPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> window = HistoryUtil.getSlidingWindow(state, windowSize);
+        List<Spot> window = HistoryUtil.window(state, windowSize);
         if (window.size() < minHistory) {
             return List.of();
         }

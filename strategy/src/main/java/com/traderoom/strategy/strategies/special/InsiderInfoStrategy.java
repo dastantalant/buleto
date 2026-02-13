@@ -8,10 +8,12 @@ import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.model.State;
+import com.traderoom.api.utils.HistoryUtil;
 import com.traderoom.strategy.predictor.RestrictedPredictor;
 import com.traderoom.strategy.predictor.MultiOrderMarkovPredictor;
 import com.traderoom.api.utils.BetHelper;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -69,9 +71,9 @@ public class InsiderInfoStrategy extends AbstractStrategy {
     private void updateInsiderInfo(State state) {
         // Здесь могла бы быть логика получения данных из API или по времени
         // Для примера: раз в 100 раундов меняем запрещенные числа на последние 5 выпавших (Hot Spots Avoidance)
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() >= 5) {
-            Set<Spot> last5 = Set.copyOf(history.subList(history.size() - 5, history.size()));
+            Set<Spot> last5 = Set.copyOf(HistoryUtil.window(history, 5));
             predictor.setBannedSpots(last5);
         }
     }

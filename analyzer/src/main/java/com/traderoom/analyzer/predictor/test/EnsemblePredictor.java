@@ -6,6 +6,7 @@ import com.traderoom.api.model.SpotPrediction;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class EnsemblePredictor implements PredictorTest {
     }
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         Map<Spot, Double> accumulator = HashMap.newHashMap(48);
         for (var prediction : predictions) {
             for (var predict : prediction.predict(history, rouletteType, windowSize)) {

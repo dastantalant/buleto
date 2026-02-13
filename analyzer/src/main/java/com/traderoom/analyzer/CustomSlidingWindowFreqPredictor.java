@@ -7,6 +7,9 @@ import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
 
 import java.util.Comparator;
+import java.util.Deque;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,18 +28,29 @@ public class CustomSlidingWindowFreqPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
-        int historySize = history.size();
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.isEmpty()) {
+            return List.of();
+        }
 
-        int startIndex = Math.max(0, historySize - windowSize);
-        List<Spot> window = history.subList(startIndex, historySize);
-        double totalInWindow = window.size();
+        int toTake = Math.min(windowSize, history.size());
 
-        Map<Spot, Long> counts = window.stream()
-                .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+        Map<Spot, Long> counts = new EnumMap<>(Spot.class);
+        var it = history.descendingIterator();
+
+        int taken = 0;
+        while (it.hasNext() && taken < toTake) {
+            Spot spot = it.next();
+            counts.merge(spot, 1L, Long::sum);
+            taken++;
+        }
+
+        if (taken == 0) return List.of();
+
+        double total = taken;
 
         return counts.entrySet().stream()
-                .map(e -> SpotPrediction.of(e.getKey(), e.getValue() / totalInWindow))
+                .map(e -> SpotPrediction.of(e.getKey(), e.getValue() / total))
                 .sorted(Comparator.comparingDouble(SpotPrediction::probability).reversed())
                 .toList();
     }

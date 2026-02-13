@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +30,7 @@ public class PatternPredictor implements Predictor {
     }
 
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = getSlidingWindow(state);
+        List<Spot> history = HistoryUtil.window(state, analysisWindowSize);
         if (history.size() < minHistoryRequired) return List.of();
         EnumMap<Spot, Double> baseFrequency = calculateBaseFrequency(history);
         EnumMap<Spot, Double> hotColdWeights = calculateHotColdWeights(history, config);
@@ -49,13 +50,13 @@ public class PatternPredictor implements Predictor {
         return normalizeProbabilities(predictions);
     }
 
-    private List<Spot> getSlidingWindow(State state) {
-        List<Spot> fullHistory = state.getMarket().getHistory();
-        int size = fullHistory.size();
-        if (size == 0) return Collections.emptyList();
-        int start = Math.max(0, size - analysisWindowSize);
-        return fullHistory.subList(start, size);
-    }
+//    private List<Spot> getSlidingWindow(State state) {
+//        List<Spot> fullHistory = state.getMarket().getHistory();
+//        int size = fullHistory.size();
+//        if (size == 0) return Collections.emptyList();
+//        int start = Math.max(0, size - analysisWindowSize);
+//        return fullHistory.subList(start, size);
+//    }
 
     private EnumMap<Spot, Double> calculateBaseFrequency(List<Spot> history) {
         EnumMap<Spot, Double> frequency = new EnumMap<>(Spot.class);

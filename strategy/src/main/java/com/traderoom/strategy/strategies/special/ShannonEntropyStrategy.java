@@ -7,7 +7,9 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
+import com.traderoom.api.utils.HistoryUtil;
 
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +34,10 @@ public class ShannonEntropyStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < windowSize) return List.of();
 
-        List<Spot> window = history.subList(history.size() - windowSize, history.size());
+        List<Spot> window = HistoryUtil.window(history, windowSize);
 
         double entropy = calculateEntropy(window);
 

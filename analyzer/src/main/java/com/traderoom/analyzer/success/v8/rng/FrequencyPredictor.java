@@ -7,6 +7,8 @@ import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
 
 import java.util.Comparator;
+import java.util.Deque;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -21,24 +23,28 @@ public class FrequencyPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.isEmpty()) return List.of();
 
-        // Берем срез (Window)
-        int size = history.size();
-        int start = Math.max(0, size - windowSize);
-        List<Spot> window = history.subList(start, size);
-        double windowLen = window.size();
+        int toTake = Math.min(windowSize, history.size());
 
-        // Считаем частоту
-        Map<Spot, Long> counts = window.stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        Map<Spot, Long> counts = new EnumMap<>(Spot.class);
+
+        var it = history.descendingIterator();
+        int collected = 0;
+
+        while (it.hasNext() && collected < toTake) {
+            Spot spot = it.next();
+            counts.merge(spot, 1L, Long::sum);
+            collected++;
+        }
+
+        double windowLen = collected;
+        if (windowLen == 0) return List.of();
 
         return counts.entrySet().stream()
-                // Фильтр для ГСЧ: Игнорируем числа, выпавшие всего 1 раз (шум).
-                // Ищем те, что подтвердили активность (>= 2 раз)
-                .filter(entry -> entry.getValue() >= 2)
-                .map(entry -> SpotPrediction.of(entry.getKey(), entry.getValue() / windowLen))
+                .filter(e -> e.getValue() >= 2)
+                .map(e -> SpotPrediction.of(e.getKey(), e.getValue() / windowLen))
                 .sorted(Comparator.comparingDouble(SpotPrediction::probability).reversed())
                 .toList();
     }

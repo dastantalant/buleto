@@ -7,6 +7,7 @@ import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,7 +19,7 @@ public class StatisticalPredictor implements Predictor {
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
         // Мы используем историю, накопленную только внутри текущей "сессии" стратегии
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
 
         if (history.isEmpty()) return List.of();
 

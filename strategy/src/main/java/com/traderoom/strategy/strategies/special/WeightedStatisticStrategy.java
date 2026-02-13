@@ -7,6 +7,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.annotation.Strategy;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,11 +33,10 @@ public class WeightedStatisticStrategy extends AbstractStrategy {
 
     @Override
     public List<Bet> decide() {
-        List<Spot> history = getMarket().getHistory();
+        Deque<Spot> history = getMarket().getHistory();
         if (history.size() < 20) return List.of(); // Мало данных
 
-        // Берем срез истории
-        List<Spot> window = history.subList(Math.max(0, history.size() - windowSize), history.size());
+        List<Spot> window = HistoryUtil.window(history, windowSize);
 
         // Считаем частоты
         Map<Spot, Long> frequencies = window.stream()

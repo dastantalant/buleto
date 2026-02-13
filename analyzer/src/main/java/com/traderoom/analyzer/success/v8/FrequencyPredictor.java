@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 import com.traderoom.api.model.State;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,7 +23,7 @@ public class FrequencyPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> window = split(state.getMarket().getHistory(), windowSize);
+        List<Spot> window = HistoryUtil.window(state.getMarket().getHistory(), windowSize);
         double size = window.size();
         Map<Spot, Long> counts = window.stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));

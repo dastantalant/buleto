@@ -5,6 +5,8 @@ import com.traderoom.api.enums.RouletteType;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.*;
 import com.traderoom.api.model.config.Config;
+import com.traderoom.api.utils.HistoryUtil;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,15 +22,15 @@ public class TitanPredictor implements Predictor {
 
     @Override
     public List<SpotPrediction> predictSpot(State state, Config config) {
-        List<Spot> history = state.getMarket().getHistory();
+        Deque<Spot> history = state.getMarket().getHistory();
         if (history.size() < windowSize) return List.of();
 
         // Берем последние N спинов
-        int start = Math.max(0, history.size() - windowSize);
-        List<Spot> recent = history.subList(start, history.size());
+//        int start = Math.max(0, history.size() - windowSize);
+        List<Spot> recent = HistoryUtil.window(history,windowSize);//history.subList(start, history.size());
 
         // Считаем вес каждого сектора (9 чисел: центр + 4 соседа с каждой стороны)
-        Map<Spot, Double> sectorWeights = new HashMap<>();
+        Map<Spot, Double> sectorWeights = new EnumMap<>(Spot.class);
 
         for (Spot center : Spot.getAvailableList(RouletteType.EUROPEAN)) {
             List<Spot> sector = wheelNeighbors.get(center);

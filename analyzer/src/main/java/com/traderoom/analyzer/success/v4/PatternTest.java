@@ -3,8 +3,10 @@ package com.traderoom.analyzer.success.v4;
 import com.traderoom.api.enums.RouletteType;
 import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
+import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -95,8 +97,8 @@ public class PatternTest implements PredictorTest {
      */
 
     @Override
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
-        List<Spot> window = split(history, windowSize);
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
+        List<Spot> window = HistoryUtil.window(history, windowSize);
         // Шаг 1: Базовая математическая вероятность (Частота выпадения)
         EnumMap<Spot, Double> baseFrequency = calculateBaseFrequency(window);
         // Шаг 2: Корректировка на "температуру" числа

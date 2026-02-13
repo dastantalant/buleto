@@ -19,21 +19,25 @@ public class TrendPredictor implements Predictor {
 
     // Метод специально для стратегии цветов
     public Color predictNextColor(State state) {
-        Spot lastSpot = state.getMarket().getLastSpot();
-
-        // Если истории нет или последний был Зеро - ставим на Красное по умолчанию
-        if (lastSpot == null || lastSpot.isGreen()) {
-            // Пытаемся найти последний не зеленый
-            List<Spot> history = state.getMarket().getHistory();
-            for (int i = history.size() - 1; i >= 0; i--) {
-                Spot s = history.get(i);
-                if (!s.isGreen()) {
-                    return s.getColor();
-                }
-            }
-            return Color.RED; // Дефолт
+        Deque<Spot> history = state.getMarket().getHistory();
+        if (history.isEmpty()) {
+            return Color.RED;
         }
 
-        return lastSpot.getColor();
+        var it = history.descendingIterator();
+        Spot last = it.next();
+
+        if (!last.isGreen()) {
+            return last.getColor();
+        }
+
+        while (it.hasNext()) {
+            Spot s = it.next();
+            if (!s.isGreen()) {
+                return s.getColor();
+            }
+        }
+
+        return Color.RED;
     }
 }

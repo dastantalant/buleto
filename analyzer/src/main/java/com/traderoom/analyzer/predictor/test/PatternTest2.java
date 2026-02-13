@@ -5,6 +5,7 @@ import com.traderoom.api.enums.Spot;
 import com.traderoom.api.model.SpotPrediction;
 
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ public class PatternTest2 implements PredictorTest {
      * 3. Перемножает веса для каждого числа рулетки: {@code Prob = Base * HotCold * Pattern}.
      * 4. Нормализует результаты (сумма вероятностей = 100%).
      */
-    public List<SpotPrediction> predict(List<Spot> history, RouletteType rouletteType, int windowSize) {
+    public List<SpotPrediction> predict(Deque<Spot> history, RouletteType rouletteType, int windowSize) {
         List<Spot> window = split(history, windowSize);
         // 1. Z-Score: Глобальный статистический анализ (на всем окне 1000+ спинов)
         // Показывает, какие числа переоценены или недооценены ГСЧ.
