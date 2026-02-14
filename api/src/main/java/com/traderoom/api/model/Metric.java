@@ -115,7 +115,7 @@ public final class Metric {
                 .startBalance(startBalance)
                 .lastProfit(balance - oldBalance)
                 .lastBets(bets != null ? List.copyOf(bets) : List.of())
-                .roundBetAmount(BetHelper.getTotalBetValue(bets))
+                .roundBetAmount(BetHelper.totalBetValue(bets))
                 .netProfit(netProfit)
                 .roiPercentage(roiPercentage)
                 .winRatePercentage(winRatePercentage)

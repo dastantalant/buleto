@@ -108,7 +108,7 @@ public class RngTrendFollowerStrategy extends AbstractStrategy {
         }
 
         // Финальная проверка бюджета
-        long totalReq = BetHelper.getTotalBetValue(bets);
+        long totalReq = BetHelper.totalBetValue(bets);
         if (totalReq > totalBudgetLimit) {
             return List.of(); // Не хватает денег - пропускаем
         }

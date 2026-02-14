@@ -12,7 +12,7 @@ public final class BetHelper {
     private BetHelper() {
     }
 
-    public static long getTotalPayout(List<Bet> list, Spot spot, TableRules rules) {
+    public static long totalPayout(List<Bet> list, Spot spot, TableRules rules) {
         if (list == null || list.isEmpty()) return 0;
         long payout = 0;
         for (Bet bet : list) {
@@ -32,13 +32,13 @@ public final class BetHelper {
         return type.getPayout() == 1;
     }
 
-    public static long getTotalBetValue(List<Bet> list) {
+    public static long totalBetValue(List<Bet> list) {
         return (list == null || list.isEmpty()) ? 0 : list.stream()
                 .mapToLong(Bet::value)
                 .sum();
     }
 
-    public static long getTotalPayout(List<Bet> list, Spot spot) {
+    public static long totalPayout(List<Bet> list, Spot spot) {
         return (list == null || list.isEmpty()) ? 0 : list.stream()
                 .filter(bet -> isWin(bet, spot))
                 .mapToLong(bet -> bet.value() * bet.type().getReturnMultiplier())

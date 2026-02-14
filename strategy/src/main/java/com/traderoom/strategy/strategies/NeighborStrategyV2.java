@@ -89,7 +89,7 @@ public class NeighborStrategyV2 extends AbstractStrategy {
         long min = getMinBet();
         // Если проигрываем, немного увеличиваем, но не удваиваем
         if (isLastBet() && !isLastBetWon()) {
-            long lastTotal = BetHelper.getTotalBetValue(getLastBets());
+            long lastTotal = BetHelper.totalBetValue(getLastBets());
             long nextTotal = (long) (lastTotal * 1.2);
             // Делим на 5 чисел в секторе
             return Math.max(min, nextTotal / 5);

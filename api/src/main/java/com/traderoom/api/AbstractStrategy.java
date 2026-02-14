@@ -98,8 +98,8 @@ public abstract class AbstractStrategy implements IStrategy {
             metric.updateEmpty(getVirtualBalance());
             return snapshot(oldBalance, spot, bets);
         }
-        long totalBetValue = BetHelper.getTotalBetValue(bets);
-        long totalPayout = BetHelper.getTotalPayout(bets, spot);
+        long totalBetValue = BetHelper.totalBetValue(bets);
+        long totalPayout = BetHelper.totalPayout(bets, spot);
         setVirtualBalance(getVirtualBalance() - totalBetValue + totalPayout);
         metric.update(getVirtualBalance(), totalBetValue, totalPayout);
         return metric.snapshot(isLive(), bets, spot, getVirtualBalance(), oldBalance, getConfig().debug());
@@ -140,7 +140,7 @@ public abstract class AbstractStrategy implements IStrategy {
     }
 
     protected final long getLastBet() {
-        return BetHelper.getTotalBetValue(getLastBets());
+        return BetHelper.totalBetValue(getLastBets());
     }
 
     protected final void setLastBets(List<Bet> lastBets) {

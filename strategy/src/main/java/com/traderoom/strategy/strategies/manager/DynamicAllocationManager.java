@@ -70,8 +70,8 @@ public class DynamicAllocationManager extends BaseManager {
             List<Bet> virtualBets = tracker.lastVirtualBets;
             long profit = 0;
             if (!virtualBets.isEmpty()) {
-                long payout = BetHelper.getTotalPayout(virtualBets, spot);
-                long cost = BetHelper.getTotalBetValue(virtualBets);
+                long payout = BetHelper.totalPayout(virtualBets, spot);
+                long cost = BetHelper.totalBetValue(virtualBets);
                 profit = payout - cost;
             }
 

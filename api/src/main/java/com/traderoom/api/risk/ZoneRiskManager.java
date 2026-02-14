@@ -117,11 +117,11 @@ public class ZoneRiskManager implements RiskManager {
         }
         if (validatedBets.isEmpty()) return List.of();
         if (currentBalance > dangerZoneThreshold && currentBalance < profitZoneThreshold) {
-            long totalValue = BetHelper.getTotalBetValue(validatedBets);
+            long totalValue = BetHelper.totalBetValue(validatedBets);
             long capLimit = (long) (currentBalance * normalZoneBetCap);
             if (totalValue > capLimit) validatedBets = scale(validatedBets, capLimit);
         }
-        long totalValue = BetHelper.getTotalBetValue(validatedBets);
+        long totalValue = BetHelper.totalBetValue(validatedBets);
         if (totalValue > tableLimit) {
             if (strictMode) throw new StrategyException("Total bet exceeds table limit: " + totalValue);
             validatedBets = scale(validatedBets, tableLimit);
@@ -142,7 +142,7 @@ public class ZoneRiskManager implements RiskManager {
     }
 
     private List<Bet> scale(List<Bet> bets, long limit) {
-        long totalValue = BetHelper.getTotalBetValue(bets);
+        long totalValue = BetHelper.totalBetValue(bets);
         if (totalValue <= limit) return bets;
         double scalingFactor = (double) limit / totalValue;
         List<Bet> scaledBets = new ArrayList<>(bets.size());
