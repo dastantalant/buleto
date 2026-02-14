@@ -1,9 +1,8 @@
 package com.traderoom.strategy.strategies.manager;
 
-import com.traderoom.api.IStrategy;
 import com.traderoom.api.AbstractStrategy;
+import com.traderoom.api.IStrategy;
 import com.traderoom.api.model.config.Config;
-import com.traderoom.api.StrategyContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +39,10 @@ public abstract class BaseManager extends AbstractStrategy implements Manager {
     }
 
     public Optional<IStrategy> create(Class<? extends IStrategy> clazz, Config config) {
-        return Optional.ofNullable(StrategyContext.create(clazz, config));
+        try {
+            return Optional.of(clazz.getConstructor(Config.class).newInstance(config));
+        } catch (Exception _) {
+            return Optional.empty();
+        }
     }
 }

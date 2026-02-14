@@ -54,7 +54,7 @@ public final class BettingHelper {
             long betValue = (long) (total * (item.probability() / sum));
 
             if (betValue >= 1L) {
-                bets.add(Bet.of(BetHelper.getStraightUp(item.spot()), betValue));
+                bets.add(Bet.of(BetHelper.straightUp(item.spot()), betValue));
             }
         }
         return bets;

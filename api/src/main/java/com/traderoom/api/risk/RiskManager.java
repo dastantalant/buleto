@@ -1,13 +1,12 @@
 package com.traderoom.api.risk;
 
 import com.traderoom.api.IStrategy;
-import com.traderoom.api.model.config.Config;
 import com.traderoom.api.model.Bet;
+import com.traderoom.api.model.config.Config;
 
-import java.io.Serializable;
 import java.util.List;
 
-public interface RiskManager extends Serializable {
+public interface RiskManager {
     List<Bet> apply(List<Bet> bets, IStrategy strategy);
 
     void updateState(long currentBalance);

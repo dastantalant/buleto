@@ -15,5 +15,5 @@ public final class Constants {
 
     public static final int BALANCE_HISTORY_SIZE = 10000;
 
-    public static final Package PACKAGE = IStrategy.class.getPackage();
+    public static final double KELLY_FRACTION_DEFAULT = 0.25;
 }

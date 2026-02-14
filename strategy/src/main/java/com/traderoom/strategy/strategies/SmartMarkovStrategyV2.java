@@ -7,7 +7,6 @@ import com.traderoom.api.annotation.Tag;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.utils.BetHelper;
-import com.traderoom.api.utils.HistoryUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +62,7 @@ public class SmartMarkovStrategyV2 extends AbstractStrategy {
                     long bet = (long) (bank * 0.01 * (prob * 10));
                     bet = Math.clamp(bet, getMinBet(), getMaxBet());
 
-                    return Bet.list(BetHelper.getStraightUp(e.getKey()), bet);
+                    return Bet.list(BetHelper.straightUp(e.getKey()), bet);
                 })
                 .orElse(List.of());
     }

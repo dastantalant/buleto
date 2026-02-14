@@ -38,7 +38,7 @@ public class PivotStrategy extends AbstractStrategy {
         if (currentPivot != null) {
             long value = getMinBet();
             if (value > getVirtualBalance()) return List.of();
-            return Bet.list(BetHelper.getStraightUp(currentPivot), value);
+            return Bet.list(BetHelper.straightUp(currentPivot), value);
         }
         return List.of();
     }

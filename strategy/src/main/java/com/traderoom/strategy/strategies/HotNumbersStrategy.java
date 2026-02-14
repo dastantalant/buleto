@@ -36,7 +36,7 @@ public class HotNumbersStrategy extends AbstractStrategy {
 
         return (spots.isEmpty()) ? List.of() :
                 spots.stream()
-                        .map(spot -> Bet.of(BetHelper.getStraightUp(spot), getMinBet()))
+                        .map(spot -> Bet.of(BetHelper.straightUp(spot), getMinBet()))
                         .toList();
     }
 }

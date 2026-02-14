@@ -123,7 +123,7 @@ public class NeighborAnalysisStrategyV2 extends AbstractStrategy {
         // Ставим на центр и соседей
         for (int i = -NEIGHBOR_DISTANCE; i <= NEIGHBOR_DISTANCE; i++) {
             int idx = (pos + i + len) % len;
-            bets.add(Bet.of(BetHelper.getStraightUp(wheelLayout[idx]), val));
+            bets.add(Bet.of(BetHelper.straightUp(wheelLayout[idx]), val));
         }
         return bets;
     }

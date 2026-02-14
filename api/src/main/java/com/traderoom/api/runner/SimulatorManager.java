@@ -1,8 +1,9 @@
 package com.traderoom.api.runner;
 
+import com.traderoom.api.IStrategy;
 import com.traderoom.api.Subscriber;
-import com.traderoom.api.StrategyContext;
 import com.traderoom.api.exception.StrategyException;
+import com.traderoom.api.model.config.Config;
 import com.traderoom.api.runner.supplier.SpotSupplier;
 
 import java.util.ArrayList;
@@ -64,15 +65,18 @@ public sealed interface SimulatorManager permits SimulatorManager.Base, Simulato
             Map<Runner, Subscriber> subscribers = new HashMap<>();
             Map<Runner, String> nameMap = new IdentityHashMap<>();
             for (MetaConfigMap item : meta) {
-                var strategy = StrategyContext.create(item.clazz(), item.config());
-                if (strategy != null) {
-                    Subscriber sub = Subscriber.storage();
-                    strategy.addSubscriber(sub);
-                    Runner runner = Runner.of(strategy);
-                    runners.add(runner);
-                    subscribers.put(runner, sub);
-                    nameMap.put(runner, item.config().name());
+                IStrategy strategy;
+                try {
+                    strategy = item.clazz().getConstructor(Config.class).newInstance(item.config());
+                } catch (Exception e) {
+                    throw new StrategyException("Cannot instantiate " + item.clazz().getName(), e);
                 }
+                Subscriber sub = Subscriber.storage();
+                strategy.addSubscriber(sub);
+                Runner runner = Runner.of(strategy);
+                runners.add(runner);
+                subscribers.put(runner, sub);
+                nameMap.put(runner, item.config().name());
             }
             if (runners.isEmpty()) {
                 return new LinkedList<>();

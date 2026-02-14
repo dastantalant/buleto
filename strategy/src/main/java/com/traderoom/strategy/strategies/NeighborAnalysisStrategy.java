@@ -79,15 +79,15 @@ public class NeighborAnalysisStrategy extends AbstractStrategy {
             return List.of();
         }
 
-        bets.add(Bet.of(BetHelper.getStraightUp(last), getMinBet()));
+        bets.add(Bet.of(BetHelper.straightUp(last), getMinBet()));
         for (int i = 1; i <= neighborDistanceThreshold; i++) {
             Spot left = spots[(position - i + spots.length) % spots.length];
             if (left.getWheelPosition(rType) != -1) {
-                bets.add(Bet.of(BetHelper.getStraightUp(left), getMinBet()));
+                bets.add(Bet.of(BetHelper.straightUp(left), getMinBet()));
             }
             Spot right = spots[(position + i) % spots.length];
             if (right.getWheelPosition(rType) != -1 && !left.equals(right)) {
-                bets.add(Bet.of(BetHelper.getStraightUp(right), getMinBet()));
+                bets.add(Bet.of(BetHelper.straightUp(right), getMinBet()));
             }
         }
         return bets;

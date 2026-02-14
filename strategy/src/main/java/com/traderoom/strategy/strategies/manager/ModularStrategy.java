@@ -41,6 +41,6 @@ public abstract class ModularStrategy extends AbstractStrategy {
             amount = Math.min(amount, balance);
             if (amount < getMinBet()) return List.of();
         }
-        return Bet.list(BetHelper.getStraightUp(bestPrediction.spot()), amount);
+        return Bet.list(BetHelper.straightUp(bestPrediction.spot()), amount);
     }
 }

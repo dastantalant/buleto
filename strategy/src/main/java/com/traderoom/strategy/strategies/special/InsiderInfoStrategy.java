@@ -50,7 +50,7 @@ public class InsiderInfoStrategy extends AbstractStrategy {
         // Берем топ-3 разрешенных числа
         return predictions.stream()
                 .limit(3)
-                .map(p -> Bet.of(BetHelper.getStraightUp(p.spot()), getMinBet()))
+                .map(p -> Bet.of(BetHelper.straightUp(p.spot()), getMinBet()))
                 .toList();
     }
 

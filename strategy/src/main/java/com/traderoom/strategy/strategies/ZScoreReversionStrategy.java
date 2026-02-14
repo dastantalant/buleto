@@ -63,7 +63,7 @@ public class ZScoreReversionStrategy extends AbstractStrategy {
             if (zScore < zThreshold) {
                 // Дополнительный фильтр: не ставим, если оно только что выпадало (ждем гэпа)
                 // Но в простейшей версии ставим сразу
-                bets.add(Bet.of(BetHelper.getStraightUp(spot), betValue));
+                bets.add(Bet.of(BetHelper.straightUp(spot), betValue));
             }
         }
 

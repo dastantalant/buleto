@@ -45,7 +45,7 @@ public class PatternStrategy extends AbstractStrategy {
         }
 
         List<Bet> bets = extract( spot, total);
-        return (bets.isEmpty()) ? Bet.list(BetHelper.getStraightUp(spot.getFirst().spot()), getMinBet()) : bets;
+        return (bets.isEmpty()) ? Bet.list(BetHelper.straightUp(spot.getFirst().spot()), getMinBet()) : bets;
     }
 
     private List<Bet> extract(List<SpotPrediction> predictions, long total) {
@@ -68,7 +68,7 @@ public class PatternStrategy extends AbstractStrategy {
                 long calculatedValue = (long) (total * item.probability() * multiplier);
                 long betValue = Math.clamp(calculatedValue, minBet, remaining);
                 budget += betValue;
-                bets.add(Bet.of(BetHelper.getStraightUp(item.spot()), betValue));
+                bets.add(Bet.of(BetHelper.straightUp(item.spot()), betValue));
             }
         }
         return bets;

@@ -71,7 +71,7 @@ public class StraightUpStrategy2V2 extends AbstractStrategy {
                     double confidenceMultiplier = 1.0 + (p.probability() - baseThreshold) * 10;
                     long value = (long) (baseStake * confidenceMultiplier);
                     value = Math.clamp(value, getMinBet(), getMaxBet());
-                    return Bet.of(BetHelper.getStraightUp(p.spot()), value);
+                    return Bet.of(BetHelper.straightUp(p.spot()), value);
                 })
                 .toList();
     }

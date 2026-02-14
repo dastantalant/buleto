@@ -97,7 +97,7 @@ public abstract class AbstractHybridPredictorStrategy extends AbstractStrategy {
             long value = (long) (budget * (item.probability() / sum));
             long clamp = Math.clamp(value, getMinBet(), getMaxBet());
             if (clamp <= getVirtualBalance()) {
-                result.add(Bet.of(BetHelper.getStraightUp(item.spot()), clamp));
+                result.add(Bet.of(BetHelper.straightUp(item.spot()), clamp));
             }
         }
         return result;

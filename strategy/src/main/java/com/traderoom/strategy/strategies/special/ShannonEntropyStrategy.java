@@ -73,7 +73,7 @@ public class ShannonEntropyStrategy extends AbstractStrategy {
                 .filter(e -> e.getValue() >= 2)
                 .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
                 .limit(3)
-                .map(e -> Bet.of(BetHelper.getStraightUp(e.getKey()), getMinBet()))
+                .map(e -> Bet.of(BetHelper.straightUp(e.getKey()), getMinBet()))
                 .toList();
     }
 }

@@ -62,7 +62,7 @@ public class WheelSectorStrategy extends AbstractStrategy {
             if (sum < value) {
                 break;
             }
-            bets.add(Bet.of(BetHelper.getStraightUp(spot), value));
+            bets.add(Bet.of(BetHelper.straightUp(spot), value));
         }
 
         return bets;

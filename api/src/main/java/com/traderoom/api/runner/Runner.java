@@ -1,8 +1,8 @@
 package com.traderoom.api.runner;
 
 import com.traderoom.api.IStrategy;
-import com.traderoom.api.StrategyContext;
 import com.traderoom.api.enums.Spot;
+import com.traderoom.api.exception.StrategyException;
 import com.traderoom.api.model.Bet;
 import com.traderoom.api.model.Snapshot;
 import com.traderoom.api.model.State;
@@ -20,7 +20,11 @@ public interface Runner {
     }
 
     static Runner from(Config config, Class<IStrategy> clazz) {
-        return new Base(StrategyContext.create(clazz, config));
+        try {
+            return new Base(clazz.getConstructor(Config.class).newInstance(config));
+        } catch (Exception e) {
+            throw new StrategyException("Not constructor with config", e);
+        }
     }
 
     List<Bet> prepareBets();
@@ -71,7 +75,7 @@ public interface Runner {
         }
 
         public void setAcceptedBets(List<Bet> realBets) {
-            this.acceptedBets = realBets;
+            acceptedBets = realBets;
         }
 
         @Override

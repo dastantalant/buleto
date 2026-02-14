@@ -16,7 +16,6 @@ import com.traderoom.core.util.StringUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -47,7 +46,7 @@ public abstract class AbstractStrategy implements IStrategy {
             try {
                 Spot spot = Spot.getByNumber(number);
                 market.addSpot(spot);
-            } catch (Exception ignore) {
+            } catch (Exception _) {
             }
         }
         return State.of(config, market);
@@ -55,14 +54,10 @@ public abstract class AbstractStrategy implements IStrategy {
 
     public final List<Bet> calculateNextBets() {
         shouldStopConditions();
-        if (!isLive()) {
-            return Collections.emptyList();
-        }
+        if (!isLive()) return Collections.emptyList();
         riskManager.calculateMin(this);
         long max = riskManager.calculateMax(this);
-        if (max == 0) {
-            return Collections.emptyList();
-        }
+        if (max == 0) return Collections.emptyList();
         List<Bet> rawBets = decide();
         return riskManager.apply(rawBets, this);
     }
@@ -107,7 +102,7 @@ public abstract class AbstractStrategy implements IStrategy {
         long totalPayout = BetHelper.getTotalPayout(bets, spot);
         setVirtualBalance(getVirtualBalance() - totalBetValue + totalPayout);
         metric.update(getVirtualBalance(), totalBetValue, totalPayout);
-        return snapshot(oldBalance, spot, bets);
+        return metric.snapshot(isLive(), bets, spot, getVirtualBalance(), oldBalance, getConfig().debug());
     }
 
     @Override
@@ -116,7 +111,11 @@ public abstract class AbstractStrategy implements IStrategy {
     }
 
     protected final Snapshot snapshot(long oldBalance, Spot spot, List<Bet> bets) {
-        return metric.snapshot(isLive(), bets, spot, getVirtualBalance(), oldBalance);
+        return metric.snapshot(isLive(), bets, spot, getVirtualBalance(), oldBalance, true);
+    }
+
+    protected final Snapshot snapshot(long oldBalance, Spot spot, List<Bet> bets, boolean detailed) {
+        return metric.snapshot(isLive(), bets, spot, getVirtualBalance(), oldBalance, detailed);
     }
 
     public final Config getConfig() {
@@ -159,13 +158,8 @@ public abstract class AbstractStrategy implements IStrategy {
 
     @Override
     public final Snapshot endGame() {
-//        if (state.getRealBalance() > state.getConfig().startBalance()) {
-            state.setLive(false);
-            return publishGameEnd(snapshot());
-//        }
-//        setVirtualBalance(state.getConfig().startBalance());
-//        stopConditions = StopConditionFactory.from(getConfig().stopConfig(), getConfig().startBalance());
-//        return snapshot();
+        state.setLive(false);
+        return publishGameEnd(snapshot());
     }
 
     @Override
@@ -187,7 +181,7 @@ public abstract class AbstractStrategy implements IStrategy {
         return riskManager.getMaxBet();
     }
 
-    protected final Queue<Long> getHistoryBalance() {
+    protected final List<Long> getHistoryBalance() {
         return metric.getHistoryBalance();
     }
 
@@ -239,7 +233,6 @@ public abstract class AbstractStrategy implements IStrategy {
         return metric.getTotalPayout();
     }
 
-    //================publisher================
     private final Set<Subscriber> subscribers = new CopyOnWriteArraySet<>();
 
     @Override

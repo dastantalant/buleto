@@ -46,9 +46,9 @@ public class RegimeSwitchingStrategy extends AbstractStrategy {
 
         // Ставим в зависимости от того, какой режим сейчас "тащит"
         if (currentMode == Mode.TREND) {
-            hotCandidates.forEach(s -> bets.add(Bet.of(BetHelper.getStraightUp(s), betValue)));
+            hotCandidates.forEach(s -> bets.add(Bet.of(BetHelper.straightUp(s), betValue)));
         } else if (currentMode == Mode.MEAN_REVERSION) {
-            coldCandidates.forEach(s -> bets.add(Bet.of(BetHelper.getStraightUp(s), betValue)));
+            coldCandidates.forEach(s -> bets.add(Bet.of(BetHelper.straightUp(s), betValue)));
         }
 
         return bets;

@@ -278,4 +278,8 @@ public enum Spot {
     public Color getColor() {
         return color;
     }
+
+    public boolean isZero() {
+        return number == 0;
+    }
 }

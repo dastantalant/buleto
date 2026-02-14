@@ -1,14 +1,20 @@
 package com.traderoom.api.runner.web;
 
 import com.traderoom.api.IStrategy;
-import com.traderoom.api.Subscriber; // Импорт интерфейса
+import com.traderoom.api.Subscriber;
+import com.traderoom.api.exception.StrategyException;
 import com.traderoom.api.model.config.Config;
-import com.traderoom.api.StrategyContext;
 import com.traderoom.api.runner.Runner;
 import com.traderoom.api.runner.SharedSimulator;
 import com.traderoom.api.runner.supplier.SpotSupplier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public interface WebSimulatorManager {
 
@@ -24,41 +30,29 @@ public interface WebSimulatorManager {
         @Override
         public Deque<WebSimulateResult> run() {
             List<Runner> runners = new ArrayList<>();
-            // Используем IdentityHashMap для корректной работы с экземплярами
             Map<Runner, SamplingSubscriber> subscribersMap = new IdentityHashMap<>();
-            // Карта для SharedSimulator (требует интерфейс Subscriber)
             Map<Runner, Subscriber> sharedSubscribersMap = new IdentityHashMap<>();
-
             Map<Runner, String> strategyNames = new IdentityHashMap<>();
-
             long maxRounds = supplier.getMax();
-
             for (Class<? extends IStrategy> clazz : strategies) {
-                var strategy = StrategyContext.create(clazz, config);
-                if (strategy != null) {
-                    SamplingSubscriber sub = new SamplingSubscriber(maxRounds);
-                    strategy.addSubscriber(sub);
-
-                    Runner runner = Runner.of(strategy);
-                    runners.add(runner);
-
-                    subscribersMap.put(runner, sub);
-                    sharedSubscribersMap.put(runner, sub); // Для симулятора
-                    strategyNames.put(runner, strategy.getName());
+                IStrategy strategy;
+                try {
+                    strategy = clazz.getConstructor(Config.class).newInstance(config);
+                } catch (Exception e) {
+                    throw new StrategyException("Strategy " + clazz.getSimpleName() + " not found", e);
                 }
+                SamplingSubscriber sub = new SamplingSubscriber(maxRounds);
+                strategy.addSubscriber(sub);
+                Runner runner = Runner.of(strategy);
+                runners.add(runner);
+                subscribersMap.put(runner, sub);
+                sharedSubscribersMap.put(runner, sub);
+                strategyNames.put(runner, strategy.getName());
             }
-
             if (runners.isEmpty()) return new LinkedList<>();
-
-            // Передаем реальных подписчиков, чтобы SharedSimulator мог (если нужно)
-            // дергать их onGameEnd или использовать для логов.
-            // Приводим типы, если нужно (Java Generics могут ругаться, но Map<Runner, Subscriber> валиден)
             SharedSimulator simulator = new SharedSimulator(runners, sharedSubscribersMap, supplier);
-
             simulator.run();
-
             Deque<WebSimulateResult> results = new LinkedList<>();
-
             for (Runner runner : runners) {
                 SamplingSubscriber sub = subscribersMap.get(runner);
                 String sName = strategyNames.get(runner);

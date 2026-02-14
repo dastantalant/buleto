@@ -77,7 +77,8 @@ public record RiskConfig(
         Integer dangerZoneThresholdRisk,
         Integer profitZoneThresholdRisk,
         Integer normalZoneBetCapRisk,
-        Integer penaltyBoxDurationRisk
+        Integer penaltyBoxDurationRisk,
+        boolean strictMode
 
 ) {
 
@@ -89,20 +90,21 @@ public record RiskConfig(
      * @param normalZoneBetCapRisk    лимит ставки (default: 5)
      * @param penaltyBoxDurationRisk  штрафные раунды (default: 10)
      */
-    public RiskConfig(Integer dangerZoneThresholdRisk, Integer profitZoneThresholdRisk, Integer normalZoneBetCapRisk, Integer penaltyBoxDurationRisk) {
+    public RiskConfig(Integer dangerZoneThresholdRisk, Integer profitZoneThresholdRisk, Integer normalZoneBetCapRisk, Integer penaltyBoxDurationRisk, boolean strictMode) {
         this.dangerZoneThresholdRisk = Objects.requireNonNullElse(dangerZoneThresholdRisk, 90); // 90%
         this.profitZoneThresholdRisk = Objects.requireNonNullElse(profitZoneThresholdRisk, 110); // 110%
         int rawCap = Objects.requireNonNullElse(normalZoneBetCapRisk, 5);
         this.normalZoneBetCapRisk = Math.min(rawCap, 100);
         this.penaltyBoxDurationRisk = Objects.requireNonNullElse(penaltyBoxDurationRisk, 10);
         boolean isDisabledMode = this.dangerZoneThresholdRisk == 0 && this.profitZoneThresholdRisk == 0;
+        this.strictMode = strictMode;
         if (!isDisabledMode && (this.dangerZoneThresholdRisk >= this.profitZoneThresholdRisk)) {
             throw new IllegalArgumentException("Danger threshold must be lower than Profit threshold");
         }
     }
 
     public static RiskConfig defaultConfig() {
-        return new RiskConfig(90, 110, 5, 10);
+        return new RiskConfig(90, 110, 5, 10, false);
     }
 
     /**
@@ -119,7 +121,7 @@ public record RiskConfig(
      */
 
     public static RiskConfig disabled() {
-        return new RiskConfig(0, 0, 100, 0);
+        return new RiskConfig(0, 0, 100, 0, false);
     }
 
 
@@ -132,9 +134,10 @@ public record RiskConfig(
         private Integer profitZoneThresholdRisk;
         private Integer normalZoneBetCapRisk;
         private Integer penaltyBoxDurationRisk;
+        private boolean strictMode;
 
         public RiskConfig build() {
-            return new RiskConfig(dangerZoneThresholdRisk, profitZoneThresholdRisk, normalZoneBetCapRisk, penaltyBoxDurationRisk);
+            return new RiskConfig(dangerZoneThresholdRisk, profitZoneThresholdRisk, normalZoneBetCapRisk, penaltyBoxDurationRisk, strictMode);
         }
 
         public Builder dangerZoneThresholdRisk(Integer dangerZoneThresholdRisk) {
@@ -154,6 +157,11 @@ public record RiskConfig(
 
         public Builder penaltyBoxDurationRisk(Integer penaltyBoxDurationRisk) {
             this.penaltyBoxDurationRisk = penaltyBoxDurationRisk;
+            return this;
+        }
+
+        public Builder strictMode(boolean strictMode) {
+            this.strictMode = strictMode;
             return this;
         }
     }

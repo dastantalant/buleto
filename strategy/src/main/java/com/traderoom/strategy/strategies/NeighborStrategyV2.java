@@ -79,7 +79,7 @@ public class NeighborStrategyV2 extends AbstractStrategy {
         for (int offset = -searchRadius; offset <= searchRadius; offset++) {
             int index = (bestCenter + offset + wheelSize) % wheelSize;
             Spot target = wheelLayout[index];
-            bets.add(Bet.of(BetHelper.getStraightUp(target), baseBet));
+            bets.add(Bet.of(BetHelper.straightUp(target), baseBet));
         }
 
         return bets;

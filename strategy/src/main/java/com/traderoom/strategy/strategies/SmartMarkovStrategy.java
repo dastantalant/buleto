@@ -27,7 +27,7 @@ public class SmartMarkovStrategy extends AbstractStrategy {
         return predictor.predictSpot(getState(), getConfig()).stream()
                 .filter(prediction -> prediction.probability() > min)
                 .limit(3)
-                .map(prediction -> Bet.of(BetHelper.getStraightUp(prediction.spot()), getMinBet()))
+                .map(prediction -> Bet.of(BetHelper.straightUp(prediction.spot()), getMinBet()))
                 .toList();
     }
 }

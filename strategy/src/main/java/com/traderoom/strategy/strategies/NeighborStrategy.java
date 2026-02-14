@@ -79,7 +79,7 @@ public class NeighborStrategy extends AbstractStrategy {
         int len = layout.length;
         for (int i = -radius; i <= radius; i++) {
             int idx = (centerPos + i + len) % len;
-            bets.add(Bet.of(BetHelper.getStraightUp(layout[idx]), val));
+            bets.add(Bet.of(BetHelper.straightUp(layout[idx]), val));
         }
         return bets;
     }

@@ -8,6 +8,8 @@ import java.util.Deque;
 public record Config(
         String name,
         RouletteType rouletteType,
+        boolean debug,
+        TableRules tableRules,
         Long minBet,
         Long maxBet,
         Long startBalance,
@@ -33,6 +35,8 @@ public record Config(
     public static class Builder {
         private String name;
         private RouletteType rouletteType;
+        private boolean debug = false;
+        private TableRules tableRules = TableRules.standard();
         private Long minBet;
         private Long maxBet;
         private Long startBalance;
@@ -45,7 +49,7 @@ public record Config(
 
         public Config build() {
             realBalance = realBalance == null ? startBalance : realBalance;
-            return new Config(name, rouletteType, minBet, maxBet, startBalance, realBalance, tableLimit, stopConfig, initial, riskConfig, betLimitConfig);
+            return new Config(name, rouletteType, debug, tableRules, minBet, maxBet, startBalance, realBalance, tableLimit, stopConfig, initial, riskConfig, betLimitConfig);
         }
 
         public Builder name(String name) {
@@ -55,6 +59,16 @@ public record Config(
 
         public Builder rouletteType(RouletteType rouletteType) {
             this.rouletteType = rouletteType;
+            return this;
+        }
+
+        public Builder debug(boolean debug) {
+            this.debug = debug;
+            return this;
+        }
+
+        public Builder tableRules(TableRules tableRules) {
+            this.tableRules = tableRules;
             return this;
         }
 

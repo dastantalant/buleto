@@ -54,7 +54,7 @@ public class BayesianMetaStrategy extends AbstractStrategy {
 
             // Получаем мнение модели (берем Straight Up для унификации)
             model.predictSpot(getState(), getConfig()).forEach(pred -> {
-                BetType type = BetHelper.getStraightUp(pred.spot());
+                BetType type = BetHelper.straightUp(pred.spot());
                 double weightedProb = pred.probability() * modelWeight;
                 aggregatedOpinion.merge(type, weightedProb, Double::sum);
             });

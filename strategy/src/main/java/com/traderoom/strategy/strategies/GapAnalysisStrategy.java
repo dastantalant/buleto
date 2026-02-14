@@ -67,7 +67,7 @@ public class GapAnalysisStrategy extends AbstractStrategy {
             // Проверка на лимиты баланса
             if (balance < betSize) break;
 
-            bets.add(Bet.of(BetHelper.getStraightUp(spot), betSize));
+            bets.add(Bet.of(BetHelper.straightUp(spot), betSize));
             balance -= betSize;
 
             // Увеличиваем счетчик попыток (мы сделали ставку)

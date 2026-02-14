@@ -79,7 +79,9 @@ public record Snapshot(
         long totalPayout,
         List<Bet> lastBets,
         long startBalance,
-        boolean isLive
+        boolean isLive,
+        double sharpeRatio,
+        int maxDrawdownDuration
 ) {
     /**
      * calculate field roiPercentage
@@ -138,6 +140,8 @@ public record Snapshot(
         private List<Bet> lastBets;
         private long startBalance;
         private boolean isLive;
+        private double sharpeRatio;
+        private int maxDrawdownDuration;
 
         public Snapshot build() {
             return new Snapshot(strategyName,
@@ -161,7 +165,9 @@ public record Snapshot(
                     totalPayout,
                     lastBets,
                     startBalance,
-                    isLive);
+                    isLive,
+             sharpeRatio,
+            maxDrawdownDuration);
         }
 
         public Builder strategyName(String strategyName) {
@@ -271,6 +277,14 @@ public record Snapshot(
 
         public Builder isLive(boolean isLive) {
             this.isLive = isLive;
+            return this;
+        }
+        public Builder sharpeRatio(double sharpeRatio) {
+            this.sharpeRatio = sharpeRatio;
+            return this;
+        }
+        public Builder maxDrawdownDuration(int maxDrawdownDuration) {
+            this.maxDrawdownDuration = maxDrawdownDuration;
             return this;
         }
     }

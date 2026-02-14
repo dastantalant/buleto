@@ -64,7 +64,7 @@ public class WeightedStatisticStrategy extends AbstractStrategy {
 
                 // Классифицируем и ставим
                 if (SpotClassifier.isWorthy(spot, weight)) {
-                    bets.add(Bet.of(BetHelper.getStraightUp(spot), betValue));
+                    bets.add(Bet.of(BetHelper.straightUp(spot), betValue));
                 }
             }
         }

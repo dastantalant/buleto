@@ -71,7 +71,7 @@ public class GapAnalysisStrategyV2 extends AbstractStrategy {
             long betVal = minBet * betMultiplier;
 
             if (balance >= betVal) {
-                bets.add(Bet.of(BetHelper.getStraightUp(s), betVal));
+                bets.add(Bet.of(BetHelper.straightUp(s), betVal));
                 balance -= betVal;
                 // Сохраняем обновление на потом
                 updates.put(s, step + 1);

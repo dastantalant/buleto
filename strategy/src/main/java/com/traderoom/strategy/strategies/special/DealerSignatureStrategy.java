@@ -56,7 +56,7 @@ public class DealerSignatureStrategy extends AbstractStrategy {
 
         // Ставим на весь предсказанный сектор
         return predictions.stream()
-                .map(p -> Bet.of(BetHelper.getStraightUp(p.spot()), baseBet))
+                .map(p -> Bet.of(BetHelper.straightUp(p.spot()), baseBet))
                 .toList();
     }
 }

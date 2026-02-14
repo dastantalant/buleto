@@ -1,10 +1,11 @@
 package com.traderoom.api.sizing;
 
 import com.traderoom.api.IStrategy;
+import com.traderoom.api.enums.Constants;
 import com.traderoom.api.model.SpotPrediction;
 
 public class KellySizing implements Sizing {
-    private static final double FRACTION = 0.25;
+    private static final double FRACTION = Constants.KELLY_FRACTION_DEFAULT;
 
     public static KellySizing of() {
         return new KellySizing();

@@ -1,6 +1,7 @@
 package com.traderoom.api.risk;
 
 import com.traderoom.api.IStrategy;
+import com.traderoom.api.exception.StrategyException;
 import com.traderoom.api.model.config.BetLimitConfig;
 import com.traderoom.api.model.config.Config;
 import com.traderoom.api.model.config.RiskConfig;
@@ -25,46 +26,38 @@ public class ZoneRiskManager implements RiskManager {
     private boolean inPenaltyBox = false;
     private int penaltyRoundsRemaining = 0;
     private final List<BetLimitRule> limitRules;
+    private final boolean strictMode;
 
     public ZoneRiskManager(Config config) {
         RiskConfig riskConfig = config.riskConfig();
         minBet = tableMinBet = config.minBet();
         maxBet = tableMaxBet = config.maxBet();
         tableLimit = config.tableLimit();
-        // Convert integer percentage (e.g. 90) to double (0.90)
         dangerZoneThreshold = (long) (config.startBalance() * (riskConfig.dangerZoneThresholdRisk() / 100.0));
         profitZoneThreshold = (long) (config.startBalance() * (riskConfig.profitZoneThresholdRisk() / 100.0));
-        // Cap clamped to 100 in Config, here convert to factor (e.g. 5 -> 0.05)
         normalZoneBetCap = riskConfig.normalZoneBetCapRisk() / 100.0;
         penaltyDuration = riskConfig.penaltyBoxDurationRisk();
         limitRules = Collections.unmodifiableList(createRules(config.betLimitConfig()));
+        strictMode = config.riskConfig().strictMode();
     }
 
     private List<BetLimitRule> createRules(BetLimitConfig config) {
         var list = new ArrayList<BetLimitRule>();
         if (config == null) return list;
-        if (config.maxBetBalancePercentageLimit() != null && config.maxBetBalancePercentageLimit() > 0) {
+        if (config.maxBetBalancePercentageLimit() != null && config.maxBetBalancePercentageLimit() > 0)
             list.add(new BalancePercentageLimitRule(config.maxBetBalancePercentageLimit()));
-        }
-        if (config.peakProtectDrawdownStepLimit() != null && config.peakProtectDrawdownStepLimit() > 0) {
-            list.add(new PeakProtectLimitRule(config.peakProtectDrawdownStepLimit(),
-                    config.peakProtectReductionFactorLimit() != null ? config.peakProtectReductionFactorLimit() : 50));
-        }
-        if (config.minWinRateThresholdLimit() != null && config.minWinRateThresholdLimit() > 0) {
-            list.add(new WinRateLimitRule(config.minWinRateThresholdLimit(),
-                    config.minWinRateRoundsLimit() != null ? config.minWinRateRoundsLimit() : 50L));
-        }
-        if (config.floatingMinBetPercentLimit() != null && config.floatingMinBetPercentLimit() > 0) {
+        if (config.peakProtectDrawdownStepLimit() != null && config.peakProtectDrawdownStepLimit() > 0)
+            list.add(new PeakProtectLimitRule(config.peakProtectDrawdownStepLimit(), config.peakProtectReductionFactorLimit() != null ? config.peakProtectReductionFactorLimit() : 50));
+        if (config.minWinRateThresholdLimit() != null && config.minWinRateThresholdLimit() > 0)
+            list.add(new WinRateLimitRule(config.minWinRateThresholdLimit(), config.minWinRateRoundsLimit() != null ? config.minWinRateRoundsLimit() : 50L));
+        if (config.floatingMinBetPercentLimit() != null && config.floatingMinBetPercentLimit() > 0)
             list.add(new FloatingMinBetRule(config.floatingMinBetPercentLimit()));
-        }
         return list;
     }
 
     @Override
     public long calculateMin(IStrategy strategy) {
-        if (inPenaltyBox) {
-            return 0;
-        }
+        if (inPenaltyBox) return 0;
         long dynamicMin = tableMinBet;
         for (BetLimitRule rule : limitRules) {
             dynamicMin = rule.calcMin(dynamicMin, maxBet, strategy);
@@ -75,9 +68,7 @@ public class ZoneRiskManager implements RiskManager {
 
     @Override
     public long calculateMax(IStrategy strategy) {
-        if (inPenaltyBox) {
-            return 0;
-        }
+        if (inPenaltyBox) return 0;
         long dynamicMax = tableMaxBet;
         for (BetLimitRule rule : limitRules) {
             dynamicMax = rule.calcMax(minBet, dynamicMax, strategy);
@@ -103,20 +94,22 @@ public class ZoneRiskManager implements RiskManager {
     public List<Bet> apply(List<Bet> bets, IStrategy strategy) {
         long min = calculateMin(strategy);
         long max = calculateMax(strategy);
-        if (min == 0 || bets.isEmpty()) {
-            return List.of();
-        }
+        if (min == 0 || bets.isEmpty()) return List.of();
         long currentBalance = strategy.getVirtualBalance();
         List<Bet> validatedBets = new ArrayList<>(bets.size());
         for (Bet bet : bets) {
             long val = bet.value();
             if (val <= 0) continue;
-            if (val > max) {
-                val = max;
-            } else if (val < min) {
+            if (val < min) {
+                if (strictMode) throw new StrategyException("Bet under min limit: " + val + " < " + min);
                 val = min;
             }
+            if (val > max) {
+                if (strictMode) throw new StrategyException("Bet over max limit: " + val + " > " + max);
+                val = max;
+            }
             if (val > currentBalance) {
+                if (strictMode) throw new StrategyException("Bet exceeds balance: " + val + " > " + currentBalance);
                 val = currentBalance;
             }
             if (val < 1) continue;
@@ -126,17 +119,14 @@ public class ZoneRiskManager implements RiskManager {
         if (currentBalance > dangerZoneThreshold && currentBalance < profitZoneThreshold) {
             long totalValue = BetHelper.getTotalBetValue(validatedBets);
             long capLimit = (long) (currentBalance * normalZoneBetCap);
-            if (totalValue > capLimit) {
-                validatedBets = scale(validatedBets, capLimit);
-            }
+            if (totalValue > capLimit) validatedBets = scale(validatedBets, capLimit);
         }
         long totalValue = BetHelper.getTotalBetValue(validatedBets);
         if (totalValue > tableLimit) {
+            if (strictMode) throw new StrategyException("Total bet exceeds table limit: " + totalValue);
             validatedBets = scale(validatedBets, tableLimit);
         }
-        if (totalValue > currentBalance) {
-            validatedBets = scale(validatedBets, currentBalance);
-        }
+        if (totalValue > currentBalance) validatedBets = scale(validatedBets, currentBalance);
         return validatedBets;
     }
 
@@ -144,9 +134,7 @@ public class ZoneRiskManager implements RiskManager {
     public void updateState(long currentBalance) {
         if (inPenaltyBox) {
             penaltyRoundsRemaining--;
-            if (penaltyRoundsRemaining <= 0) {
-                inPenaltyBox = false;
-            }
+            if (penaltyRoundsRemaining <= 0) inPenaltyBox = false;
         } else if (currentBalance <= dangerZoneThreshold) {
             inPenaltyBox = true;
             penaltyRoundsRemaining = penaltyDuration;
@@ -160,9 +148,7 @@ public class ZoneRiskManager implements RiskManager {
         List<Bet> scaledBets = new ArrayList<>(bets.size());
         for (Bet bet : bets) {
             long newVal = (long) (bet.value() * scalingFactor);
-            if (newVal >= 1) {
-                scaledBets.add(Bet.of(bet.type(), newVal));
-            }
+            if (newVal >= 1) scaledBets.add(Bet.of(bet.type(), newVal));
         }
         return scaledBets;
     }

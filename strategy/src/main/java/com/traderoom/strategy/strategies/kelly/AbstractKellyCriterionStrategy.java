@@ -30,7 +30,7 @@ public abstract class AbstractKellyCriterionStrategy extends AbstractStrategy {
     }
 
     protected Optional<KellyBet> calculateKellyFraction(SpotPrediction prediction, double kelly) {
-        BetType type = BetHelper.getStraightUp(prediction.spot());
+        BetType type = BetHelper.straightUp(prediction.spot());
         double prob = prediction.probability();
         double payout = type.getPayout();
         if (payout > 0) {

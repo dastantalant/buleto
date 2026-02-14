@@ -33,7 +33,7 @@ public class StraightUpStrategy2 extends AbstractStrategy {
 
         return predictions.stream()
                 .filter(item -> item.probability() > probability)
-                .map(item -> Bet.of(BetHelper.getStraightUp(item.spot()),
+                .map(item -> Bet.of(BetHelper.straightUp(item.spot()),
                         Math.max(getMinBet(), (long) (limit * item.probability()))))
                 .toList();
     }

@@ -33,6 +33,6 @@ public class StraightUpStrategy extends AbstractStrategy {
             return List.of();
         }
         Spot spot = optional.get().spot();
-        return Bet.list(BetHelper.getStraightUp(spot), getMinBet());
+        return Bet.list(BetHelper.straightUp(spot), getMinBet());
     }
 }
