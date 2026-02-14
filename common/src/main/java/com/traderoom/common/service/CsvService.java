@@ -20,6 +20,10 @@ public class CsvService implements SaveService {
     private FastTextWriter writer;
     private String currentDateStr;
 
+    public CsvService() {
+        this("csv");
+    }
+
     public CsvService(String dir) {
         this.dir = dir;
         fmt = DateTimeFormatter.ofPattern("yyyyMMdd");

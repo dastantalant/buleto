@@ -18,7 +18,7 @@ public class SaveSubscriber implements Subscriber {
 
     public SaveSubscriber() {
         dao = new RoundDAO();
-        csv = new CsvService("csv");
+        csv = new CsvService();
     }
 
     public void onVictory(Round round) {
