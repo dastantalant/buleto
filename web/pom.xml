@@ -20,8 +20,8 @@
             <artifactId>monitoring</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.traderoom</groupId>
-            <artifactId>strategy</artifactId>
+            <groupId>com.toolbox.roulette</groupId>
+            <artifactId>roulette-strategy</artifactId>
         </dependency>
 
         <dependency>

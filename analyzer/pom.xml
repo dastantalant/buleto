@@ -17,12 +17,12 @@
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.traderoom</groupId>
-            <artifactId>strategy</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.toolbox.roulette</groupId>
+            <artifactId>roulette-strategy</artifactId>
         </dependency>
 
         <dependency>

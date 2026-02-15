@@ -16,17 +16,13 @@
 
     <modules>
         <module>analyzer</module>
-        <module>api</module>
-        <module>core</module>
-        <!--        <module>frontend</module>-->
-        <!--        <module>monitoring</module>-->
-        <module>strategy</module>
-        <module>web</module>
         <module>common</module>
+        <module>core</module>
+        <module>monitoring</module>
+        <module>web</module>
     </modules>
 
     <properties>
-        <app.version>0.0.1</app.version>
         <java.version>25</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -54,28 +50,28 @@
         <dependencies>
             <dependency>
                 <groupId>com.traderoom</groupId>
-                <artifactId>api</artifactId>
-                <version>${app.version}</version>
+                <artifactId>core</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.traderoom</groupId>
                 <artifactId>common</artifactId>
-                <version>${app.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.traderoom</groupId>
-                <artifactId>core</artifactId>
-                <version>${app.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.traderoom</groupId>
                 <artifactId>monitoring</artifactId>
-                <version>${app.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.traderoom</groupId>
-                <artifactId>strategy</artifactId>
-                <version>${app.version}</version>
+                <groupId>com.toolbox</groupId>
+                <artifactId>core</artifactId>
+                <version>0.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.toolbox.roulette</groupId>
+                <artifactId>roulette-strategy</artifactId>
+                <version>0.0.1</version>
             </dependency>
 
             <dependency>
@@ -105,26 +101,11 @@
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
-
-<!--            <dependency>-->
-<!--                <groupId>com.squareup.okhttp3</groupId>-->
-<!--                <artifactId>okhttp-bom</artifactId>-->
-<!--                <version>${okhttp.version}</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>com.squareup.okhttp3</groupId>-->
-<!--                <artifactId>okhttp</artifactId>-->
-<!--                <version>${okhttp.version}</version>-->
-<!--                &lt;!&ndash;                <scope>compile</scope>&ndash;&gt;-->
-<!--            </dependency>-->
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp-jvm</artifactId>
                 <version>${okhttp.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -160,6 +141,18 @@
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>se.kth.castor</groupId>
+                    <artifactId>depclean-maven-plugin</artifactId>
+                    <version>2.2.0-SNAPSHOT</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>depclean</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -1,0 +1,38 @@
+package com.buleto.analyzer.predictor;
+
+import com.buleto.analyzer.predictor.test.EnsemblePredictor;
+import com.buleto.analyzer.predictor.test.PredictorTest;
+import com.trading.roulette.api.AbstractStrategy;
+import com.trading.roulette.api.model.Bet;
+import com.trading.roulette.api.model.SpotPrediction;
+import com.trading.roulette.api.model.config.Config;
+import com.trading.roulette.api.utils.BetHelper;
+
+import java.util.List;
+
+import static com.trading.roulette.api.enums.RouletteType.EUROPEAN;
+
+public class StrategyTest extends AbstractStrategy {
+    private final PredictorTest predictor;
+    private final int limitBet;
+    private final int windowSize;
+
+    protected StrategyTest(Config config, int limitBet, int windowSize) {
+        super(config);
+        this.limitBet = limitBet;
+        this.windowSize = windowSize;
+        predictor = new EnsemblePredictor();
+    }
+
+    @Override
+    public List<Bet> decide() {
+        List<SpotPrediction> predictions = predictor.predict(getMarket().getHistory(), EUROPEAN, windowSize);
+        if (predictions.isEmpty()) return List.of();
+        long fixedBetAmount = getMinBet();
+        if (fixedBetAmount <= 0 || fixedBetAmount > getVirtualBalance()) return List.of();
+        return predictions.stream()
+                .limit(limitBet)
+                .map(prediction -> BetHelper.betting(prediction, fixedBetAmount))
+                .toList();
+    }
+}
