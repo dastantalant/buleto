@@ -6,7 +6,7 @@ import com.trading.roulette.api.enums.Spot;
 import com.trading.roulette.api.model.Snapshot;
 import com.trading.roulette.api.model.config.Config;
 import com.trading.roulette.api.runner.Runner;
-import com.buleto.core.service.RoundDAO;
+import com.buleto.core.service.RoundPostgresDAO;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -97,8 +97,8 @@ public class RunnerTest {
     }
 
     private static Deque<Integer> european() {
-        try (var dao = new RoundDAO()) {
-            var all = dao.findAll();
+        try (var dao = new RoundPostgresDAO()) {
+            var all = dao.findAllDeque();
             var result = new LinkedList<Integer>();
             while (!all.isEmpty()) {
                 int cell = all.poll().cell();

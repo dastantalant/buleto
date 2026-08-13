@@ -10,7 +10,7 @@ public class MonitoringMain {
     private static final CountDownLatch keepAliveLatch = new CountDownLatch(1);
 
     void main() {
-        final Client client = Client.base("wss://buleto.com/ws", new SaveSubscriber());
+        final Client client = Client.okHttp("wss://buleto.com/ws", new SaveSubscriber());
         try {
             client.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

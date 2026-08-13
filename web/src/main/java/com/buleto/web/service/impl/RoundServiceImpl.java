@@ -3,7 +3,7 @@ package com.buleto.web.service.impl;
 import com.buleto.common.mapper.RoundMapper;
 import com.buleto.core.model.RoundModel;
 import com.buleto.common.model.RoundShort;
-import com.buleto.core.service.RoundDAO;
+import com.buleto.core.service.RoundPostgresDAO;
 import com.buleto.web.repository.RoundRepository;
 import com.buleto.web.service.RoundService;
 import com.zaxxer.hikari.HikariDataSource;
@@ -18,11 +18,11 @@ import java.util.List;
 @Service
 public class RoundServiceImpl implements RoundService {
     private final RoundRepository repository;
-    private final RoundDAO dao;
+    private final RoundPostgresDAO dao;
 
     public RoundServiceImpl(RoundRepository repository, HikariDataSource dataSource) {
         this.repository = repository;
-        dao = new RoundDAO(dataSource);
+        dao = new RoundPostgresDAO(dataSource);
     }
 
     @Override

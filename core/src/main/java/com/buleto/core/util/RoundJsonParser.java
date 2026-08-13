@@ -1,4 +1,4 @@
-package com.buleto.core;
+package com.buleto.core.util;
 
 import com.buleto.core.model.Round;
 

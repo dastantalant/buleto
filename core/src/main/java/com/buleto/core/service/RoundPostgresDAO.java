@@ -10,19 +10,19 @@ import org.postgresql.core.BaseConnection;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RoundDAO implements SaveService {
+public class RoundPostgresDAO implements RoundRepository, SaveService<Round>, AutoCloseable {
     private static final String FIELDS = " id, cell, factor, start_time, victory_time, begin_value, target_value, start_value, end_time, closed_time, target_time ";
     private static final String SELECT_FROM = " SELECT " + FIELDS + " FROM round ORDER BY id DESC ";
+    private static final String SELECT_BETWEEN = " SELECT " + FIELDS + " FROM round WHERE victory_time BETWEEN ? AND ? ORDER BY id DESC ";
     private static final String CONFLICT = """
             ON CONFLICT (id)
             DO UPDATE SET
@@ -45,12 +45,12 @@ public class RoundDAO implements SaveService {
 
     private final HikariDataSource dataSource;
 
-    public RoundDAO() {
+    public RoundPostgresDAO() {
         this("jdbc:postgresql://localhost:5432/buleto", "postgres", "postgres");
     }
 
-    public RoundDAO(String jdbcUrl, String username, String password) {
-        HikariConfig config = new HikariConfig();
+    public RoundPostgresDAO(String jdbcUrl, String username, String password) {
+        var config = new HikariConfig();
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(username);
         config.setPassword(password);
@@ -62,11 +62,10 @@ public class RoundDAO implements SaveService {
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("useServerPrepStmts", "true");
-        this.dataSource = new HikariDataSource(config);
-        initializeSchema();
+        this(new HikariDataSource(config));
     }
 
-    public RoundDAO(HikariDataSource dataSource) {
+    public RoundPostgresDAO(HikariDataSource dataSource) {
         this.dataSource = dataSource;
         initializeSchema();
     }
@@ -114,7 +113,7 @@ public class RoundDAO implements SaveService {
                 ALTER TABLE round ADD COLUMN IF NOT EXISTS end_time TIMESTAMPTZ;
                 ALTER TABLE round ADD COLUMN IF NOT EXISTS closed_time TIMESTAMPTZ;
                 ALTER TABLE round ADD COLUMN IF NOT EXISTS target_time TIMESTAMPTZ;
-
+                
                 ALTER TABLE round_staging ADD COLUMN IF NOT EXISTS cell INT;
                 ALTER TABLE round_staging ADD COLUMN IF NOT EXISTS factor INT;
                 ALTER TABLE round_staging ADD COLUMN IF NOT EXISTS start_time TIMESTAMPTZ;
@@ -187,9 +186,7 @@ public class RoundDAO implements SaveService {
     }
 
     public void saveAllModels(List<RoundModel> models) {
-        if (models == null || models.isEmpty()) {
-            return;
-        }
+        if (models == null || models.isEmpty()) return;
         for (int i = 0; i < models.size(); i += CHUNK_SIZE) {
             int end = Math.min(i + CHUNK_SIZE, models.size());
             var chunk = models.subList(i, end);
@@ -199,17 +196,15 @@ public class RoundDAO implements SaveService {
     }
 
     private int saveAllModelsInternal(List<RoundModel> models) {
-        if (models == null || models.isEmpty()) {
-            return 0;
-        }
+        if (models == null || models.isEmpty()) return 0;
         var sb = new StringBuilder(models.size() * 150);
-        for (RoundModel model : models) {
+        for (var model : models) {
             if (model == null) continue;
-            String startTs = model.startTime() != null ? model.startTime().toString() : "\\N";
-            String victoryTs = model.victoryTime() != null ? model.victoryTime().toString() : "\\N";
-            String endTs = model.endTime() != null ? model.endTime().toString() : "\\N";
-            String closedTs = model.closedTime() != null ? model.closedTime().toString() : "\\N";
-            String targetTs = model.targetTime() != null ? model.targetTime().toString() : "\\N";
+            var startTs = model.startTime() != null ? model.startTime().toString() : "\\N";
+            var victoryTs = model.victoryTime() != null ? model.victoryTime().toString() : "\\N";
+            var endTs = model.endTime() != null ? model.endTime().toString() : "\\N";
+            var closedTs = model.closedTime() != null ? model.closedTime().toString() : "\\N";
+            var targetTs = model.targetTime() != null ? model.targetTime().toString() : "\\N";
             sb.append(model.roundId()).append('\t')
                     .append(model.cell()).append('\t')
                     .append(model.factor()).append('\t')
@@ -228,11 +223,9 @@ public class RoundDAO implements SaveService {
     }
 
     public void saveAll(List<Round> rounds) {
-        if (rounds == null || rounds.isEmpty()) {
-            return;
-        }
+        if (rounds == null || rounds.isEmpty()) return;
         for (int i = 0; i < rounds.size(); i += CHUNK_SIZE) {
-            int end = Math.min(i + CHUNK_SIZE, rounds.size());
+            var end = Math.min(i + CHUNK_SIZE, rounds.size());
             var chunk = rounds.subList(i, end);
             var attempted = saveAllInternal(chunk);
             FastLogger.info("Processed chunk {}/{} -> attempted to insert {} rounds", end, rounds.size(), attempted);
@@ -240,9 +233,7 @@ public class RoundDAO implements SaveService {
     }
 
     private int saveAllInternal(List<Round> rounds) {
-        if (rounds == null || rounds.isEmpty()) {
-            return 0;
-        }
+        if (rounds == null || rounds.isEmpty()) return 0;
         executeCopy(build(rounds));
         return rounds.size();
     }
@@ -251,14 +242,14 @@ public class RoundDAO implements SaveService {
         try (var conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
             var copyManager = new CopyManager(conn.unwrap(BaseConnection.class));
-            try (Statement stmt = conn.createStatement()) {
+            try (var stmt = conn.createStatement()) {
                 stmt.execute("TRUNCATE round_staging");
             }
             copyManager.copyIn(COPY, new StringReader(copyData));
-            try (PreparedStatement ps = conn.prepareStatement(MOVE)) {
+            try (var ps = conn.prepareStatement(MOVE)) {
                 ps.executeUpdate();
             }
-            try (Statement stmt = conn.createStatement()) {
+            try (var stmt = conn.createStatement()) {
                 stmt.execute("TRUNCATE round_staging");
             }
             conn.commit();
@@ -269,21 +260,21 @@ public class RoundDAO implements SaveService {
 
     private String build(List<Round> rounds) {
         var sb = new StringBuilder(rounds.size() * 128);
-        for (Round r : rounds) {
-            if (r == null) continue;
-            String startTs = r.startTime() > 0 ? Instant.ofEpochMilli(r.startTime()).toString() : "\\N";
-            String victoryTs = r.victoryTime() > 0 ? Instant.ofEpochMilli(r.victoryTime()).toString() : "\\N";
-            String endTs = r.endTime() > 0 ? Instant.ofEpochMilli(r.endTime()).toString() : "\\N";
-            String closedTs = r.closedTime() > 0 ? Instant.ofEpochMilli(r.closedTime()).toString() : "\\N";
-            String targetTs = r.targetTime() > 0 ? Instant.ofEpochMilli(r.targetTime()).toString() : "\\N";
-            sb.append(r.roundId()).append('\t')
-                    .append(r.cell()).append('\t')
-                    .append(r.factor()).append('\t')
+        for (var round : rounds) {
+            if (round == null) continue;
+            var startTs = round.startTime() > 0 ? Instant.ofEpochMilli(round.startTime()).toString() : "\\N";
+            var victoryTs = round.victoryTime() > 0 ? Instant.ofEpochMilli(round.victoryTime()).toString() : "\\N";
+            var endTs = round.endTime() > 0 ? Instant.ofEpochMilli(round.endTime()).toString() : "\\N";
+            var closedTs = round.closedTime() > 0 ? Instant.ofEpochMilli(round.closedTime()).toString() : "\\N";
+            var targetTs = round.targetTime() > 0 ? Instant.ofEpochMilli(round.targetTime()).toString() : "\\N";
+            sb.append(round.roundId()).append('\t')
+                    .append(round.cell()).append('\t')
+                    .append(round.factor()).append('\t')
                     .append(startTs).append('\t')
                     .append(victoryTs).append('\t')
-                    .append(r.beginValue()).append('\t')
-                    .append(r.targetValue()).append('\t')
-                    .append(r.startValue()).append('\t')
+                    .append(round.beginValue()).append('\t')
+                    .append(round.targetValue()).append('\t')
+                    .append(round.startValue()).append('\t')
                     .append(endTs).append('\t')
                     .append(closedTs).append('\t')
                     .append(targetTs)
@@ -292,40 +283,56 @@ public class RoundDAO implements SaveService {
         return sb.toString();
     }
 
-    public Deque<Round> findAll() {
-        try (var conn = dataSource.getConnection(); var stmt = conn.prepareStatement(SELECT_FROM)) {
-            var rs = stmt.executeQuery();
-            var result = new LinkedList<Round>();
-            while (rs.next()) {
-                Timestamp startTs = rs.getTimestamp("start_time");
-                Timestamp victoryTs = rs.getTimestamp("victory_time");
-                Timestamp endTs = rs.getTimestamp("end_time");
-                Timestamp closedTs = rs.getTimestamp("closed_time");
-                Timestamp targetTs = rs.getTimestamp("target_time");
-                result.add(Round.builder()
-                        .roundId(rs.getLong("id"))
-                        .cell(rs.getInt("cell"))
-                        .startTime(startTs != null ? startTs.toInstant().toEpochMilli() : 0L)
-                        .victoryTime(victoryTs != null ? victoryTs.toInstant().toEpochMilli() : 0L)
-                        .factor(rs.getInt("factor"))
-                        .beginValue(rs.getInt("begin_value"))
-                        .targetValue(rs.getInt("target_value"))
-                        .startValue(rs.getInt("start_value"))
-                        .endTime(endTs != null ? endTs.toInstant().toEpochMilli() : 0L)
-                        .closedTime(closedTs != null ? closedTs.toInstant().toEpochMilli() : 0L)
-                        .targetTime(targetTs != null ? targetTs.toInstant().toEpochMilli() : 0L)
-                        .build());
-            }
-            return result;
+    public Deque<Round> findAllDeque() {
+        return new LinkedList<>(findAll());
+    }
+
+    public List<Round> findAllBy(long start, long end) {
+        try (var conn = dataSource.getConnection(); var stmt = conn.prepareStatement(SELECT_BETWEEN)) {
+            stmt.setTimestamp(1, new Timestamp(start));
+            stmt.setTimestamp(2, new Timestamp(end));
+            return map(stmt.executeQuery());
         } catch (SQLException e) {
             FastLogger.error("Failed to find all rounds", e);
-            return new ArrayDeque<>();
+            return List.of();
         }
     }
 
-    public void close() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+    public List<Round> findAll() {
+        try (var conn = dataSource.getConnection(); var stmt = conn.prepareStatement(SELECT_FROM)) {
+            return map(stmt.executeQuery());
+        } catch (SQLException e) {
+            FastLogger.error("Failed to find all rounds", e);
+            return List.of();
         }
+    }
+
+    private List<Round> map(ResultSet rs) throws SQLException {
+        var result = new ArrayList<Round>(960);
+        while (rs.next()) {
+            var startTs = rs.getTimestamp("start_time");
+            var victoryTs = rs.getTimestamp("victory_time");
+            var endTs = rs.getTimestamp("end_time");
+            var closedTs = rs.getTimestamp("closed_time");
+            var targetTs = rs.getTimestamp("target_time");
+            result.addLast(Round.builder()
+                    .roundId(rs.getLong("id"))
+                    .cell(rs.getInt("cell"))
+                    .startTime(startTs != null ? startTs.toInstant().toEpochMilli() : 0L)
+                    .victoryTime(victoryTs != null ? victoryTs.toInstant().toEpochMilli() : 0L)
+                    .factor(rs.getInt("factor"))
+                    .beginValue(rs.getInt("begin_value"))
+                    .targetValue(rs.getInt("target_value"))
+                    .startValue(rs.getInt("start_value"))
+                    .endTime(endTs != null ? endTs.toInstant().toEpochMilli() : 0L)
+                    .closedTime(closedTs != null ? closedTs.toInstant().toEpochMilli() : 0L)
+                    .targetTime(targetTs != null ? targetTs.toInstant().toEpochMilli() : 0L)
+                    .build());
+        }
+        return result;
+    }
+
+    public void close() {
+        if (dataSource != null && !dataSource.isClosed()) dataSource.close();
     }
 }

@@ -1,4 +1,4 @@
-package com.traderoom.android;
+package com.buleto.android;
 
 import org.junit.Test;
 

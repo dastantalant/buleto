@@ -66,12 +66,12 @@
             <dependency>
                 <groupId>com.toolbox</groupId>
                 <artifactId>core</artifactId>
-                <version>0.0.1</version>
+                <version>0.0.3</version>
             </dependency>
             <dependency>
                 <groupId>com.toolbox.roulette</groupId>
                 <artifactId>roulette-strategy</artifactId>
-                <version>0.0.1</version>
+                <version>0.0.3</version>
             </dependency>
 
             <dependency>
@@ -122,8 +122,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <target>${java.version}</target>
-                        <source>${java.version}</source>
+                        <release>11</release>
                         <compilerArgs>
                             <arg>--add-modules</arg>
                             <arg>jdk.incubator.vector</arg>

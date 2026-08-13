@@ -2,7 +2,7 @@ package com.buleto.analyzer.csv;
 
 import com.toolbox.core.csv.CsvReader;
 import com.buleto.core.model.Round;
-import com.buleto.core.service.RoundDAO;
+import com.buleto.core.service.RoundPostgresDAO;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +21,7 @@ public class CSVMain {
             for (Path p : list) {
                 all.addAll(CsvReader.read(Round.class, Files.newInputStream(p)));
             }
-            try (var dao = new RoundDAO()) {
+            try (var dao = new RoundPostgresDAO()) {
                 dao.saveAll(all);
             }
         }

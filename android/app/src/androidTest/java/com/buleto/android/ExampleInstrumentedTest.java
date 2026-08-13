@@ -1,4 +1,4 @@
-package com.traderoom.android;
+package com.buleto.android;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.traderoom.android", appContext.getPackageName());
+        assertEquals("com.buleto.android", appContext.getPackageName());
     }
 }

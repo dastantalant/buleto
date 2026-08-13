@@ -1,7 +1,7 @@
 package com.buleto.core.websocket;
 
 import com.buleto.core.model.Round;
-import com.buleto.core.RoundJsonParser;
+import com.buleto.core.util.RoundJsonParser;
 import com.toolbox.core.logging.FastLogger;
 
 import java.io.Closeable;
