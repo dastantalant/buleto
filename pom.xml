@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0-M1</version>
+        <version>4.1.2</version>
     </parent>
 
     <groupId>com.traderoom</groupId>
@@ -27,6 +27,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <toolbox.version>0.0.4</toolbox.version>
         <postgresql.version>42.7.9</postgresql.version> <!-- Jan 15, 2026 -->
         <hikari.version>5.1.0</hikari.version> <!-- Aug 19, 2025 -->
         <springdoc.version>3.0.1</springdoc.version> <!-- Jan 01, 2026 -->
@@ -66,12 +67,12 @@
             <dependency>
                 <groupId>com.toolbox</groupId>
                 <artifactId>core</artifactId>
-                <version>0.0.3</version>
+                <version>${toolbox.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.toolbox.roulette</groupId>
                 <artifactId>roulette-strategy</artifactId>
-                <version>0.0.3</version>
+                <version>${toolbox.version}</version>
             </dependency>
 
             <dependency>

@@ -16,7 +16,7 @@ spring:
       password: das
       roles: ROOT
 #jwt:
-#  secret: 2585e5db456ca0e976e0ff20a213e1924e434109cb7973b461e075240ed49cf92ecfd60b5b9dd47258a979b679949d4f8a01f062d795ebd7043e894516d4c4f4
+#  secret:
 #  access-token-expiration: 86400000 # day
 ##  access-token-expiration: 3600000 # 1h
 #  refresh-token-expiration: 2592000000 # 30d
@@ -27,7 +27,7 @@ server:
 application:
   security:
     jwt:
-      secret-key: 2585e5db456ca0e976e0ff20a213e1924e434109cb7973b461e075240ed49cf92ecfd60b5b9dd47258a979b679949d4f8a01f062d795ebd7043e894516d4c4f4
+      secret-key:
       expiration: 900000 #  15 min in ms
       cookie-name: jwt-cookie
       refresh-token:
